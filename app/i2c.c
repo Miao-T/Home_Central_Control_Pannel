@@ -114,12 +114,6 @@ void I2CInit_Master(I2C_TypeDef *I2Cx, u32 uiI2C_speed)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void I2C_Restart(I2C_TypeDef *I2Cx)
-{
-    I2Cx -> CR |= I2C_CR_RESTART;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 void BSP_I2C_Configure()
 {
     initGPIO_I2C(I2C2);
@@ -144,7 +138,6 @@ void Sensor_ReadBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt)
             // Write command is sent when RX FIFO is not full
             if (I2C_GetFlagStatus(I2Cx, I2C_STATUS_FLAG_TFNF) && !flag){
                 I2C_ReadCmd(I2Cx);
-                // ptr[i] = I2C_ReceiveData(I2Cx);
                 // When flag is set, receive complete
                 if (i == cnt){
                     flag = 1;
@@ -171,6 +164,7 @@ void Sensor_WriteBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt)
 ////////////////////////////////////////////////////////////////////////////////
 void Sensor_Read(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt)
 {
+    // HAL_StatusTypeDef HAL_I2C_Mem_Write(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)
     I2C_Cmd(I2Cx, DISABLE);
     I2C_Send7bitAddress(I2Cx, addr, I2C_Direction_Transmitter);
     I2C_Cmd(I2Cx, ENABLE);
@@ -178,6 +172,7 @@ void Sensor_Read(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt)
     Sensor_WriteByte(I2Cx, subAddr);
     Sensor_ReadBuffer(I2Cx, ptr, cnt);
     I2C_GenerateSTOP(I2Cx, ENABLE);
+    while((I2C_GetITStatus(I2Cx, I2C_FLAG_STOP_DET)) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -190,6 +185,7 @@ void Sensor_Write(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt)
     Sensor_WriteByte(I2Cx, subAddr);
     Sensor_WriteBuffer(I2Cx, ptr, cnt);
     I2C_GenerateSTOP(I2Cx, ENABLE);
+    while((I2C_GetITStatus(I2Cx, I2C_FLAG_STOP_DET)) == 0);
 }
 
 // ////////////////////////////////////////////////////////////////////////////////

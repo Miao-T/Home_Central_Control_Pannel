@@ -977,6 +977,9 @@
   <group>
     <name>app</name>
     <file>
+      <name>$PROJ_DIR$\..\..\app\hts211.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\app\i2c.c</name>
     </file>
     <file>

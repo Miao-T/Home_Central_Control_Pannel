@@ -82,11 +82,14 @@ int main(void)
     MCUID = SetSystemClock(emSYSTICK_On, AppTaskTick);
 
     initPeri();
+    u8 temp[2] = {0,0};
+    HTS211_Init(I2C2);
+    // HTS211_Temprature_Get(I2C2);
+    // Sensor_Write(I2C2, 0xBE, 0x20, &i2cTx[0], 1);
+    // Sensor_Write(I2C2, 0xBE, 0x21, &i2cTx[1], 1);
+    Sensor_Read(I2C2, 0xBE, 0x10, &temp[0], 1);
+    Sensor_Read(I2C2, 0xBE, 0x21, &temp[1], 1);
 
-    
-    Sensor_Write(I2C2, 0xBE, 0x20, i2cTx, 1);
-    Sensor_Read(I2C2, 0xBE, 0x20, i2cRx, 1);
-//    Sensor_Read(I2C2, 0xBE, 0x0F, i2cRx, 2);
     while (1) {
       LD1_on();
     }
