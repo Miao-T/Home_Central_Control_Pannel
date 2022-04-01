@@ -34,6 +34,10 @@
 #include "main.h"
 #include "i2c.h"
 
+volatile u8 gRxFlag = 0;
+volatile u8 gTxFlag = 0;
+u8 gData;
+
 ////////////////////////////////////////////////////////////////////////////////
 void initGPIO_I2C(I2C_TypeDef *I2Cx)
 {
@@ -69,10 +73,8 @@ void initGPIO_I2C(I2C_TypeDef *I2Cx)
         // I2C2 SDA PE6
         GPIO_InitStruct.GPIO_Pin  = GPIO_Pin_6;
         GPIO_Init(GPIOE, &GPIO_InitStruct);
-        
     }
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 void NVIC_I2C(I2C_TypeDef* I2Cx)
@@ -109,7 +111,8 @@ void I2CInit_Master(I2C_TypeDef *I2Cx, u32 uiI2C_speed)
     I2C_InitStruct.ClockSpeed = uiI2C_speed;
     I2C_Init(I2Cx, &I2C_InitStruct);
 
-    // I2C_Send7bitAddress(I2Cx, 0X5F, WR);
+    I2C_Cmd(I2Cx, DISABLE);
+    I2C_Send7bitAddress(I2Cx, 0xBE, I2C_Direction_Transmitter);
     I2C_Cmd(I2Cx, ENABLE);
 }
 
@@ -119,7 +122,7 @@ void BSP_I2C_Configure()
     initGPIO_I2C(I2C2);
     I2CInit_Master(I2C2, 100000);
     NVIC_I2C(I2C2);
-    // I2C_ITConfig(I2C2, I2C_IT_RX_UNDER | I2C_IT_RX_OVER | I2C_IT_RX_FULL | I2C_IT_STOP_DET, ENABLE);
+    I2C_ITConfig(I2C2, I2C_IT_RX_FULL, ENABLE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -130,26 +133,14 @@ void Sensor_WriteByte(I2C_TypeDef *I2Cx, u8 dat)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Sensor_ReadBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt)
+static u8 Sensor_ReadByte(I2C_TypeDef *I2Cx)
 {
-    u8 i, flag = 0;
-    for (i = 0; i < cnt; i++){
-        while(1){
-            // Write command is sent when TX FIFO is not full
-            if (I2C_GetFlagStatus(I2Cx, I2C_STATUS_FLAG_TFNF) && !flag){
-                I2C_ReadCmd(I2Cx);
-                // When flag is set, receive complete
-                if (i == cnt){
-                    flag = 1;
-                }
-            }
-            // Check receive FIFO not empty
-            if (I2C_GetFlagStatus(I2Cx, I2C_STATUS_FLAG_RFNE)){
-                ptr[i] = I2C_ReceiveData(I2Cx);
-                break;
-            }
-        }
-    }
+    u8 temp;
+    gRxFlag = 0;
+    I2C_ReadCmd(I2Cx);
+    while(gRxFlag == 0);
+    temp = gData;
+    return temp;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,17 +153,12 @@ void Sensor_WriteBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Sensor_Read(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt)
+void Sensor_ReadBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt)
 {
-    // HAL_StatusTypeDef HAL_I2C_Mem_Write(I2C_HandleTypeDef *hi2c, uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size, uint32_t Timeout)
-    I2C_Cmd(I2Cx, DISABLE);
-    I2C_Send7bitAddress(I2Cx, addr, I2C_Direction_Transmitter);
-    I2C_Cmd(I2Cx, ENABLE);
-
-    Sensor_WriteByte(I2Cx, subAddr);
-    Sensor_ReadBuffer(I2Cx, ptr, cnt);
-    I2C_GenerateSTOP(I2Cx, ENABLE);
-    while((I2C_GetITStatus(I2Cx, I2C_FLAG_STOP_DET)) == 0);
+    u8 i;
+    for (i = 0; i < cnt; i++){
+        ptr[i] = Sensor_ReadByte(I2Cx);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -183,15 +169,51 @@ void Sensor_Write(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt)
     I2C_Cmd(I2Cx, ENABLE);
 
     Sensor_WriteByte(I2Cx, subAddr);
+    // Sensor_WriteByte(I2Cx, *ptr);
     Sensor_WriteBuffer(I2Cx, ptr, cnt);
     I2C_GenerateSTOP(I2Cx, ENABLE);
-    while((I2C_GetITStatus(I2Cx, I2C_FLAG_STOP_DET)) == 0);
+    while((I2C_GetITStatus(I2Cx, I2C_IT_STOP_DET)) == 0);
 }
 
-// ////////////////////////////////////////////////////////////////////////////////
-// void I2C2_IRQHandler()
-// {
-//     if(I2C_GetITStatus(I2C2, I2C_IT_STOP_DET) != RESET){
-//         I2C_ClearITPendingBit(I2C2, I2C_IT_STOP_DET);
-//     }
-// }
+////////////////////////////////////////////////////////////////////////////////
+void Sensor_Read(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt)
+{
+    I2C_Cmd(I2Cx, DISABLE);
+    I2C_Send7bitAddress(I2Cx, addr, I2C_Direction_Receiver);
+    I2C_Cmd(I2Cx, ENABLE);
+
+    Sensor_WriteByte(I2Cx, subAddr);
+    Sensor_ReadBuffer(I2Cx, ptr, cnt);
+    I2C_GenerateSTOP(I2Cx, ENABLE);
+    while((I2C_GetITStatus(I2Cx, I2C_IT_STOP_DET)) == 0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void I2C1_IRQHandler()
+{
+    if(I2C_GetITStatus(I2C1, I2C_IT_TX_EMPTY)) {
+        I2C_ClearITPendingBit(I2C1, I2C_IT_TX_EMPTY);
+        I2C_ITConfig(I2C1, I2C_IT_TX_EMPTY, DISABLE);
+        gTxFlag = 1;
+    }
+    if(I2C_GetITStatus(I2C1, I2C_IT_RX_FULL)) {
+        gData = I2C_ReceiveData(I2C1);
+        I2C_ClearITPendingBit(I2C1, I2C_IT_RX_FULL);
+        gRxFlag = 1;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void I2C2_IRQHandler()
+{
+    if(I2C_GetITStatus(I2C2, I2C_IT_TX_EMPTY)) {
+        I2C_ClearITPendingBit(I2C2, I2C_IT_TX_EMPTY);
+        I2C_ITConfig(I2C2, I2C_IT_TX_EMPTY, DISABLE);
+        gTxFlag = 1;
+    }
+    if(I2C_GetITStatus(I2C2, I2C_IT_RX_FULL)) {
+        gData = I2C_ReceiveData(I2C2);
+        I2C_ClearITPendingBit(I2C2, I2C_IT_RX_FULL);
+        gRxFlag = 1;
+    }
+}

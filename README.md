@@ -1,11 +1,16 @@
-# MB039 test demo
-说明：
+# Home Central Control Pannel
+> Hardware: MM32F3277
+>
+> Sensors: HTS211 / LPS22HH / LSM6DS
+>
+> Dev Env: IAR 7.80.4
 
-新建项目：
-- `..\project\\[YourIPName]\\[YourIPName].ewp`
-- `..\project\\[YourIPName]\\[YourIPName].ewt`
+## <font color=#990000>Sensor Module</font>
 
-测试文件
-主目录:
-- `..\app\\[YourIPName]\\***.c`
-- `..\app\\[YourIPName]\inc\\***.h`
+1. **HTS221 Humidity and Temperature Sensor**
+   - `hts221.c`
+   - `i2c.c`
+
+2. **LPS22hh Pressure Sensor**
+
+3. **LSM6DS Motion Sensor**

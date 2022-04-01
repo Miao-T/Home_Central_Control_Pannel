@@ -254,8 +254,8 @@ void I2C_GeneralCallCmd(I2C_TypeDef* I2Cn, FunctionalState state)
 ////////////////////////////////////////////////////////////////////////////////
 void I2C_ITConfig(I2C_TypeDef* I2Cn, u16 it, FunctionalState state)
 {
-    if (it == I2C_IT_RX_FULL)
-        I2C_ReadCmd(I2Cn);
+    // if (it == I2C_IT_RX_FULL)
+    //     I2C_ReadCmd(I2Cn);
     (state) ? SET_BIT(I2Cn->IMR, it) : CLEAR_BIT(I2Cn->IMR, (u16)it);
 }
 
