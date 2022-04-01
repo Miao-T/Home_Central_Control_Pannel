@@ -3,17 +3,17 @@
 #define __I2C_H_
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef struct {
-	u8 busy;
-	u8 ack;
-	u8 error;
-	u8 opt;
-	u8 sub;
-	u8 cnt;
-	u8 *ptr;
-	u8 rev;
-	u8 sadd;
-}I2C_def;
+// typedef struct {
+// 	u8 busy;
+// 	u8 ack;
+// 	u8 error;
+// 	u8 opt;
+// 	u8 sub;
+// 	u8 cnt;
+// 	u8 *ptr;
+// 	u8 rev;
+// 	u8 sadd;
+// }I2C_def;
 
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef _I2C_C_
@@ -26,8 +26,8 @@ u8 i2cRx[] = {0,0,0,0,0,0,0,0};
 #else
 #define GLOBAL extern
 
-extern u8 i2cTx[8];
-extern u8 i2cRx[8];
+// extern u8 i2cTx[8];
+// extern u8 i2cRx[8];
 
 #endif
 

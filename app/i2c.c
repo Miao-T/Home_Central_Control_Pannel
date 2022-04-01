@@ -135,7 +135,7 @@ void Sensor_ReadBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt)
     u8 i, flag = 0;
     for (i = 0; i < cnt; i++){
         while(1){
-            // Write command is sent when RX FIFO is not full
+            // Write command is sent when TX FIFO is not full
             if (I2C_GetFlagStatus(I2Cx, I2C_STATUS_FLAG_TFNF) && !flag){
                 I2C_ReadCmd(I2Cx);
                 // When flag is set, receive complete

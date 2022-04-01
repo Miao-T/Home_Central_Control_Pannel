@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "hal_i2c.h": "c"
+        "hal_i2c.h": "c",
+        "hal_nvic.h": "c",
+        "hal_gpio.h": "c",
+        "string.h": "c"
     }
 }

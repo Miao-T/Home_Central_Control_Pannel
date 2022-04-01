@@ -22,6 +22,7 @@
 
 // Includes  -------------------------------------------------------------------
 #include <string.h>
+#include <stdio.h>
 #include "mm32_types.h"
 #include "mm32_system.h"
 #include "common.h"
@@ -34,7 +35,7 @@
 #include "main.h"
 #include "uart.h"
 #include "i2c.h"
-#include "hts211.h"
+#include "hts221.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @addtogroup MM32_Example_Layer
@@ -82,16 +83,19 @@ int main(void)
     MCUID = SetSystemClock(emSYSTICK_On, AppTaskTick);
 
     initPeri();
-    u8 temp[2] = {0,0};
-    HTS211_Init(I2C2);
-    // HTS211_Temprature_Get(I2C2);
-    // Sensor_Write(I2C2, 0xBE, 0x20, &i2cTx[0], 1);
-    // Sensor_Write(I2C2, 0xBE, 0x21, &i2cTx[1], 1);
-    Sensor_Read(I2C2, 0xBE, 0x10, &temp[0], 1);
-    Sensor_Read(I2C2, 0xBE, 0x21, &temp[1], 1);
-
+    HTS221_Init(I2C2);
+    HTS221_Temperature_Calibration_Get(I2C2);
+    HTS221_Humidity_Calibration_Get(I2C2);
+    printf("HTS221 READY \n");
+    int16_t temperature = 0;
+    uint16_t humidity = 0;
     while (1) {
-      LD1_on();
+        LD1_on();
+        if(Key1()){
+            HTS221_Temperature_Calculation(I2C2, &temperature);
+        }else if(Key2()){
+            HTS221_Humidity_Calculation(I2C2, &humidity);
+        }
     }
 }
 
