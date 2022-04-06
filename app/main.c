@@ -83,19 +83,22 @@ int main(void)
     MCUID = SetSystemClock(emSYSTICK_On, AppTaskTick);
 
     initPeri();
-    HTS221_Init(I2C2);
-    HTS221_Temperature_Calibration_Get(I2C2);
-    HTS221_Humidity_Calibration_Get(I2C2);
-    printf("HTS221 READY \n");
-    int16_t temperature = 0;
-    uint16_t humidity = 0;
+    Scan_All_Addr(I2C2);
+
+    // HTS221_Init(I2C2);
+    // HTS221_Temperature_Calibration_Get(I2C2);
+    // HTS221_Humidity_Calibration_Get(I2C2);
+    // printf("HTS221 READY \n");
+    // int16_t temperature = 0;
+    // uint16_t humidity = 0;
+    // HTS221_Temperature_Calculation(I2C2, &temperature);
     while (1) {
         LD1_on();
-        if(Key1()){
-            HTS221_Temperature_Calculation(I2C2, &temperature);
-        }else if(Key2()){
-            HTS221_Humidity_Calculation(I2C2, &humidity);
-        }
+        // if(Key1()){
+        //     HTS221_Temperature_Calculation(I2C2, &temperature);
+        // }else if(Key2()){
+        //     HTS221_Humidity_Calculation(I2C2, &humidity);
+        // }
     }
 }
 

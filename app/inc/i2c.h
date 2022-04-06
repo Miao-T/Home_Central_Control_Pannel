@@ -3,17 +3,10 @@
 #define __I2C_H_
 ////////////////////////////////////////////////////////////////////////////////
 
-// typedef struct {
-// 	u8 busy;
-// 	u8 ack;
-// 	u8 error;
-// 	u8 opt;
-// 	u8 sub;
-// 	u8 cnt;
-// 	u8 *ptr;
-// 	u8 rev;
-// 	u8 sadd;
-// }I2C_def;
+typedef enum {
+    SLAVE_FOUND     = (uint8_t)0,
+    SLAVE_NONE      = !SLAVE_FOUND
+} I2C_SlaveScan_Typedef;
 
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef _I2C_C_
@@ -44,6 +37,7 @@ void Sensor_ReadBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt);
 void Sensor_WriteBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt);
 void Sensor_Read(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt);
 void Sensor_Write(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt);
+I2C_SlaveScan_Typedef Scan_All_Addr(I2C_TypeDef *I2Cx);
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif

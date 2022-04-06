@@ -32,7 +32,7 @@ u8 HTS221_WHO_AM_I_Get(I2C_TypeDef *I2Cx)
 {
     u8 device_id;
     if(HTS221_Reg_Read(I2Cx, HTS221_WHO_AM_I, &device_id, 1))
-        return 0x00;
+        return HTS221_ERROR;
     return device_id;
 }
 

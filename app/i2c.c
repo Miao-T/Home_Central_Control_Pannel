@@ -23,6 +23,8 @@
 // Includes  -------------------------------------------------------------------
 #include <string.h>
 #include "mm32_types.h"
+#include <string.h>
+#include <stdio.h>
 
 #include "common.h"
 #include "main.h" 
@@ -33,9 +35,11 @@
 
 #include "main.h"
 #include "i2c.h"
+#include "uart.h"
 
 volatile u8 gRxFlag = 0;
 volatile u8 gTxFlag = 0;
+volatile u8 abrtFlag = 0;
 u8 gData;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -111,8 +115,6 @@ void I2CInit_Master(I2C_TypeDef *I2Cx, u32 uiI2C_speed)
     I2C_InitStruct.ClockSpeed = uiI2C_speed;
     I2C_Init(I2Cx, &I2C_InitStruct);
 
-    I2C_Cmd(I2Cx, DISABLE);
-    I2C_Send7bitAddress(I2Cx, 0xBE, I2C_Direction_Transmitter);
     I2C_Cmd(I2Cx, ENABLE);
 }
 
@@ -122,7 +124,8 @@ void BSP_I2C_Configure()
     initGPIO_I2C(I2C2);
     I2CInit_Master(I2C2, 100000);
     NVIC_I2C(I2C2);
-    I2C_ITConfig(I2C2, I2C_IT_RX_FULL, ENABLE);
+    // I2C_ITConfig(I2C2, I2C_IT_RX_FULL, ENABLE);
+    I2C_ITConfig(I2C2, 0x040, ENABLE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -169,7 +172,6 @@ void Sensor_Write(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt)
     I2C_Cmd(I2Cx, ENABLE);
 
     Sensor_WriteByte(I2Cx, subAddr);
-    // Sensor_WriteByte(I2Cx, *ptr);
     Sensor_WriteBuffer(I2Cx, ptr, cnt);
     I2C_GenerateSTOP(I2Cx, ENABLE);
     while((I2C_GetITStatus(I2Cx, I2C_IT_STOP_DET)) == 0);
@@ -206,14 +208,65 @@ void I2C1_IRQHandler()
 ////////////////////////////////////////////////////////////////////////////////
 void I2C2_IRQHandler()
 {
-    if(I2C_GetITStatus(I2C2, I2C_IT_TX_EMPTY)) {
-        I2C_ClearITPendingBit(I2C2, I2C_IT_TX_EMPTY);
-        I2C_ITConfig(I2C2, I2C_IT_TX_EMPTY, DISABLE);
-        gTxFlag = 1;
-    }
+    // if(I2C_GetITStatus(I2C2, I2C_IT_TX_EMPTY)) {
+    //     I2C_ClearITPendingBit(I2C2, I2C_IT_TX_EMPTY);
+    //     I2C_ITConfig(I2C2, I2C_IT_TX_EMPTY, DISABLE);
+    //     gTxFlag = 1;
+    // }
     if(I2C_GetITStatus(I2C2, I2C_IT_RX_FULL)) {
         gData = I2C_ReceiveData(I2C2);
         I2C_ClearITPendingBit(I2C2, I2C_IT_RX_FULL);
         gRxFlag = 1;
     }
+    if(I2C_GetITStatus(I2C2, I2C_IT_TX_ABRT)) {
+        I2C_ClearITPendingBit(I2C2, I2C_IT_TX_ABRT);
+        abrtFlag = 1;
+    }
+}
+
+I2C_SlaveScan_Typedef Scan_All_Addr(I2C_TypeDef *I2Cx)
+{
+    for(u8 i = 0x00; i <= 0x7F; i++){
+        uint32_t I2C_Timeout = 0x1000;
+        abrtFlag = 0;
+        I2C_Cmd(I2Cx, DISABLE);
+        I2C_Send7bitAddress(I2Cx, i << 1, I2C_Direction_Receiver);
+        I2C_Cmd(I2Cx, ENABLE);
+        I2C_ReadCmd(I2Cx);
+
+        while(abrtFlag == 0){
+            if(--I2C_Timeout == 0){
+                printf("0x%02x right \n", i << 1);
+                I2C_GenerateSTOP(I2Cx, ENABLE);
+                break;
+            }
+        }
+
+        if(I2C_Timeout > 0 ){
+            printf("0x%02x error \n", i << 1);
+        }
+    }
+
+    return SLAVE_FOUND;
+
+
+    //     I2C_Cmd(I2Cx, DISABLE);
+    //     I2C_Send7bitAddress(I2Cx, 0xD4, I2C_Direction_Receiver);
+    //     I2C_Cmd(I2Cx, ENABLE);
+    //     I2C_ReadCmd(I2Cx);
+
+    //     uint32_t I2C_Timeout = 0x1000;
+    //     abrtFlag = 0;
+    //     while(abrtFlag == 0){
+    //         if(--I2C_Timeout == 0){
+    //             printf("0xD4 right \n");
+    //             break;
+    //         }
+    //     }
+
+    //     if(I2C_Timeout > 0 ){
+    //         printf("0xD4 error \n");
+    //     }
+
+    // return SLAVE_FOUND;
 }
