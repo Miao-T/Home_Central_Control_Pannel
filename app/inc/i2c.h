@@ -37,7 +37,7 @@ void Sensor_ReadBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt);
 void Sensor_WriteBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt);
 void Sensor_Read(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt);
 void Sensor_Write(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt);
-I2C_SlaveScan_Typedef Scan_All_Addr(I2C_TypeDef *I2Cx);
+I2C_SlaveScan_Typedef Scan_All_Addr(I2C_TypeDef *I2Cx, u8 *ptr);
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif

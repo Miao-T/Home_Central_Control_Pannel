@@ -39,7 +39,7 @@
 
 volatile u8 gRxFlag = 0;
 volatile u8 gTxFlag = 0;
-volatile u8 abrtFlag = 0;
+volatile u8 gAbrtFlag = 0;
 u8 gData;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -220,53 +220,38 @@ void I2C2_IRQHandler()
     }
     if(I2C_GetITStatus(I2C2, I2C_IT_TX_ABRT)) {
         I2C_ClearITPendingBit(I2C2, I2C_IT_TX_ABRT);
-        abrtFlag = 1;
+        gAbrtFlag = 1;
     }
 }
 
-I2C_SlaveScan_Typedef Scan_All_Addr(I2C_TypeDef *I2Cx)
+I2C_SlaveScan_Typedef Scan_All_Addr(I2C_TypeDef *I2Cx, u8 *ptr)
 {
+    u8 j = 0x00;
     for(u8 i = 0x00; i <= 0x7F; i++){
-        uint32_t I2C_Timeout = 0x1000;
-        abrtFlag = 0;
+        uint32_t I2C_Timeout = 0x100;
+        gAbrtFlag = 0;
         I2C_Cmd(I2Cx, DISABLE);
         I2C_Send7bitAddress(I2Cx, i << 1, I2C_Direction_Receiver);
         I2C_Cmd(I2Cx, ENABLE);
         I2C_ReadCmd(I2Cx);
 
-        while(abrtFlag == 0){
+        while(gAbrtFlag == 0){
             if(--I2C_Timeout == 0){
-                printf("0x%02x right \n", i << 1);
+                printf("Device Address 0x%02x is connected \n", i << 1);
+                ptr[j++] = i << 1;
                 I2C_GenerateSTOP(I2Cx, ENABLE);
                 break;
             }
         }
 
-        if(I2C_Timeout > 0 ){
-            printf("0x%02x error \n", i << 1);
-        }
+        // if(I2C_Timeout > 0 ){
+        //     printf("0x%02x error \n", i << 1);
+        // }
     }
 
-    return SLAVE_FOUND;
-
-
-    //     I2C_Cmd(I2Cx, DISABLE);
-    //     I2C_Send7bitAddress(I2Cx, 0xD4, I2C_Direction_Receiver);
-    //     I2C_Cmd(I2Cx, ENABLE);
-    //     I2C_ReadCmd(I2Cx);
-
-    //     uint32_t I2C_Timeout = 0x1000;
-    //     abrtFlag = 0;
-    //     while(abrtFlag == 0){
-    //         if(--I2C_Timeout == 0){
-    //             printf("0xD4 right \n");
-    //             break;
-    //         }
-    //     }
-
-    //     if(I2C_Timeout > 0 ){
-    //         printf("0xD4 error \n");
-    //     }
-
-    // return SLAVE_FOUND;
+    if(ptr[0] == 0x00){
+        return SLAVE_NONE;
+    }else{
+        return SLAVE_FOUND; 
+    }
 }

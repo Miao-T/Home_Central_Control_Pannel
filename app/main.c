@@ -83,7 +83,10 @@ int main(void)
     MCUID = SetSystemClock(emSYSTICK_On, AppTaskTick);
 
     initPeri();
-    Scan_All_Addr(I2C2);
+    u8 ptr[4] = {0, 0, 0, 0};
+    if(Scan_All_Addr(I2C2, ptr)){
+        printf("Sorry, No I2C Slave Device is connected");
+    }
 
     // HTS221_Init(I2C2);
     // HTS221_Temperature_Calibration_Get(I2C2);
