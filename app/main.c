@@ -36,6 +36,7 @@
 #include "uart.h"
 #include "i2c.h"
 #include "hts221.h"
+#include "lps22hh.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @addtogroup MM32_Example_Layer
@@ -83,10 +84,18 @@ int main(void)
     MCUID = SetSystemClock(emSYSTICK_On, AppTaskTick);
 
     initPeri();
-    u8 ptr[4] = {0, 0, 0, 0};
-    if(Scan_All_Addr(I2C2, ptr)){
-        printf("Sorry, No I2C Slave Device is connected");
-    }
+    // u8 ptr[4] = {0, 0, 0, 0};
+    // if(Scan_All_Addr(I2C2, ptr)){
+    //     printf("Sorry, No I2C Slave Device is connected");
+    // }
+
+    LPS22HH_Init(I2C2);
+    u8 temp = 0;
+    // Sensor_Read(I2C2, 0xB8, 0x0F, &temp, 1);
+    int16_t pressure = 0;
+    int16_t temperature = 0;
+    LPS22HH_Pressure_Calculation(I2C2, &pressure);
+    LPS22HH_Temperature_Calculation(I2C2, &temperature);
 
     // HTS221_Init(I2C2);
     // HTS221_Temperature_Calibration_Get(I2C2);

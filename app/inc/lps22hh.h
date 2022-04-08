@@ -48,7 +48,7 @@ typedef enum {
 
 // LPS22HH Address
 #define SLAVE_ADDRESS_SA0               0x00
-#define SLAVE_ADDRESS                   0x5C && SLAVE_ADDRESS_SA0               // 0x5C
+#define SLAVE_ADDRESS                   (0x5C | SLAVE_ADDRESS_SA0)              // 0x5C
 #define SLAVE_ADDRESS_WRITE             SLAVE_ADDRESS << 1                      // 0xB8
 #define SLAVE_ADDRESS_READ              (SLAVE_ADDRESS << 1) | 0x01             // 0xB9
 
@@ -108,9 +108,15 @@ typedef enum {
 
 
 #endif
-
-
-
+LPS22HH_Error_Typedef LPS22HH_Reg_Write(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
+LPS22HH_Error_Typedef LPS22HH_Reg_Read(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
+u8 LPS22HH_WHO_AM_I_Get(I2C_TypeDef *I2Cx);
+LPS22HH_Error_Typedef LPS22HH_Init(I2C_TypeDef *I2Cx);
+LPS22HH_Error_Typedef LPS22HH_DeInit(I2C_TypeDef *I2Cx);
+LPS22HH_Error_Typedef LPS22HH_PRESS_OUT_Get(I2C_TypeDef *I2Cx, int16_t *P_OUT);
+LPS22HH_Error_Typedef LPS22HH_TEMP_OUT_Get(I2C_TypeDef *I2Cx, int16_t *T_OUT);
+LPS22HH_Error_Typedef LPS22HH_Pressure_Calculation(I2C_TypeDef *I2Cx, int16_t *value);
+LPS22HH_Error_Typedef LPS22HH_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t *value);
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

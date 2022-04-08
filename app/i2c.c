@@ -124,8 +124,7 @@ void BSP_I2C_Configure()
     initGPIO_I2C(I2C2);
     I2CInit_Master(I2C2, 100000);
     NVIC_I2C(I2C2);
-    // I2C_ITConfig(I2C2, I2C_IT_RX_FULL, ENABLE);
-    I2C_ITConfig(I2C2, 0x040, ENABLE);
+    I2C_ITConfig(I2C2, I2C_IT_RX_FULL | I2C_IT_TX_ABRT, ENABLE);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
