@@ -14,6 +14,28 @@ typedef enum {
 } LPS22HH_State_Typedef;
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @defgroup HPS22HH Interrupts Definition
+/// @{
+#define LPS22HH_IT_PHE                  0x01
+#define LPS22HH_IT_PLE                  0x02
+/// @}
+
+////////////////////////////////////////////////////////////////////////////////
+/// @defgroup HPS22HH Interrupt Mode Definition
+/// @{
+#define LPS22HH_IT_MODE_AUTOZERO        0x20
+#define LPS22HH_IT_MODE_AUTOREFP        0x80
+/// @}
+
+////////////////////////////////////////////////////////////////////////////////
+/// @defgroup LPS22HH Statusflags definition
+/// @{
+#define LPS22HH_ITS_PH_FLAG             0x01
+#define LPS22HH_ITS_PL_FLAG             0x02
+#define LPS22HH_ITS_IA_FLAG             0x04
+/// @}
+
+////////////////////////////////////////////////////////////////////////////////
 #ifdef _LPS22HH_C_
 
 // LPS22HH register subAddr
@@ -53,70 +75,123 @@ typedef enum {
 #define SLAVE_ADDRESS_READ              (SLAVE_ADDRESS << 1) | 0x01             // 0xB9
 
 // LPS22HH Device ID
-#define DEVICE_ID_WHO_AM_I              0xB3
+#define DEVICE_ID_WHO_AM_I              0xB1                                    // 0xB3 in intro, but 0xB1 in hardware
 
-// CTRL_REG1
+// LPS22HH_INTERRUPT_CFG
+#define LPS22HH_ITC_PHE_POS             (0)
+#define LPS22HH_ITC_PHE                 (0x01 << LPS22HH_ITC_PHE_POS)
+#define LPS22HH_ITC_PLE_POS             (1)
+#define LPS22HH_ITC_PLE                 (0x01 << LPS22HH_ITC_PLE_POS)
+#define LPS22HH_ITC_LIR_POS             (2)
+#define LPS22HH_ITC_LIR                 (0x01 << LPS22HH_ITC_LIR_POS)
+#define LPS22HH_ITC_DIFF_EN_POS         (3)
+#define LPS22HH_ITC_DIFF_EN             (0x01 << LPS22HH_ITC_DIFF_EN_POS)
+#define LPS22HH_ITC_RESET_AZ_POS        (4)
+#define LPS22HH_ITC_RESET_AZ            (0x01 << LPS22HH_ITC_RESET_AZ_POS)
+#define LPS22HH_ITC_AUTOZERO_POS        (5)
+#define LPS22HH_ITC_AUTOZERO            (0x01 << LPS22HH_ITC_AUTOZERO_POS)
+#define LPS22HH_ITC_RESET_ARP_POS       (6)
+#define LPS22HH_ITC_RESET_ARP           (0x01 << LPS22HH_ITC_RESET_ARP_POS)
+#define LPS22HH_ITC_AUTOREFP_POS        (7)
+#define LPS22HH_ITC_AUTOREFP            (0x01 << LPS22HH_ITC_AUTOREFP_POS)
+
+// LPS22HH_IF_CTRL
+#define LPS22HH_IFC_I2C_DIS_POS         (0)
+#define LPS22HH_IFC_I2C_DIS             (0x01 << LPS22HH_IFC_I2C_DIS_POS)
+#define LPS22HH_IFC_I3C_DIS_POS         (1)
+#define LPS22HH_IFC_I3C_DIS             (0x01 << LPS22HH_IFC_I3C_DIS_POS)
+#define LPS22HH_IFC_PD_DIS_INT_POS      (2)
+#define LPS22HH_IFC_PD_DIS_INT          (0x01 << LPS22HH_IFC_PD_DIS_INT_POS)
+#define LPS22HH_IFC_SDO_PU_EN_POS       (3)
+#define LPS22HH_IFC_SDO_PU_EN           (0x01 << LPS22HH_IFC_SDO_PU_EN_POS)
+#define LPS22HH_IFC_SDA_PU_EN_POS       (4)
+#define LPS22HH_IFC_SDA_PU_EN           (0x01 << LPS22HH_IFC_SDA_PU_EN_POS)
+#define LPS22HH_IFC_INT_EN_I3C_POS      (7)
+#define LPS22HH_IFC_INT_EN_I3C          (0x01 << LPS22HH_IFC_INT_EN_I3C_POS)
+
+// LPS22HH_CTRL_REG1
 #define LPS22HH_CR1_SIM_POS             (0)
-#define LPS22HH_CR1_SIM                 (0X01U << LPS22HH_CR1_SIM_POS)
+#define LPS22HH_CR1_SIM                 (0x01U << LPS22HH_CR1_SIM_POS)
 #define LPS22HH_CR1_BDU_POS             (1)
-#define LPS22HH_CR1_BDU                 (0X01U << LPS22HH_CR1_BDU_POS)
+#define LPS22HH_CR1_BDU                 (0x01U << LPS22HH_CR1_BDU_POS)
 #define LPS22HH_CR1_LPFP_CFG_POS        (2)
-#define LPS22HH_CR1_LPFP_CFG            (0X01U << LPS22HH_CR1_LPFP_CFG_POS)
+#define LPS22HH_CR1_LPFP_CFG            (0x01U << LPS22HH_CR1_LPFP_CFG_POS)
 #define LPS22HH_CR1_EN_LPFP_POS         (3)
-#define LPS22HH_CR1_EN_LPFP             (0X01U << LPS22HH_CR1_EN_LPFP_POS)
+#define LPS22HH_CR1_EN_LPFP             (0x01U << LPS22HH_CR1_EN_LPFP_POS)
 #define LPS22HH_CR1_ODR_POS             (4)
-#define LPS22HH_CR1_ODR_ONE_SHOT        (0X00U << LPS22HH_CR1_ODR_POS)
-#define LPS22HH_CR1_ODR_1               (0X01U << LPS22HH_CR1_ODR_POS)
-#define LPS22HH_CR1_ODR_10              (0X02U << LPS22HH_CR1_ODR_POS)
-#define LPS22HH_CR1_ODR_25              (0X03U << LPS22HH_CR1_ODR_POS)
-#define LPS22HH_CR1_ODR_50              (0X04U << LPS22HH_CR1_ODR_POS)
-#define LPS22HH_CR1_ODR_75              (0X05U << LPS22HH_CR1_ODR_POS)
-#define LPS22HH_CR1_ODR_100             (0X06U << LPS22HH_CR1_ODR_POS)
-#define LPS22HH_CR1_ODR_200             (0X07U << LPS22HH_CR1_ODR_POS)
+#define LPS22HH_CR1_ODR_ONE_SHOT        (0x00U << LPS22HH_CR1_ODR_POS)
+#define LPS22HH_CR1_ODR_1               (0x01U << LPS22HH_CR1_ODR_POS)
+#define LPS22HH_CR1_ODR_10              (0x02U << LPS22HH_CR1_ODR_POS)
+#define LPS22HH_CR1_ODR_25              (0x03U << LPS22HH_CR1_ODR_POS)
+#define LPS22HH_CR1_ODR_50              (0x04U << LPS22HH_CR1_ODR_POS)
+#define LPS22HH_CR1_ODR_75              (0x05U << LPS22HH_CR1_ODR_POS)
+#define LPS22HH_CR1_ODR_100             (0x06U << LPS22HH_CR1_ODR_POS)
+#define LPS22HH_CR1_ODR_200             (0x07U << LPS22HH_CR1_ODR_POS)
 
-// CTRL_REG2
+// LPS22HH_CTRL_REG2
 #define LPS22HH_CR2_ONE_SHOT_POS        (0)
-#define LPS22HH_CR2_ONE_SHOT            (0X01U << LPS22HH_CR2_ONE_SHOT_POS)
+#define LPS22HH_CR2_ONE_SHOT            (0x01U << LPS22HH_CR2_ONE_SHOT_POS)
 #define LPS22HH_CR2_LOW_NOISE_EN_POS    (1)
-#define LPS22HH_CR2_LOW_NOISE_EN        (0X01U << LPS22HH_CR2_LOW_NOISE_EN_POS)
+#define LPS22HH_CR2_LOW_NOISE_EN        (0x01U << LPS22HH_CR2_LOW_NOISE_EN_POS)
 #define LPS22HH_CR2_SWRESET_POS         (2)
-#define LPS22HH_CR2_SWRESET             (0X01U << LPS22HH_CR2_SWRESET_POS)
+#define LPS22HH_CR2_SWRESET             (0x01U << LPS22HH_CR2_SWRESET_POS)
 #define LPS22HH_CR2_IF_ADD_INC_POS      (4)
-#define LPS22HH_CR2_IF_ADD_INC          (0X01U << LPS22HH_CR2_IF_ADD_INC_POS)
+#define LPS22HH_CR2_IF_ADD_INC          (0x01U << LPS22HH_CR2_IF_ADD_INC_POS)
 #define LPS22HH_CR2_PP_OD_POS           (5)
-#define LPS22HH_CR2_PP_OD               (0X01U << LPS22HH_CR2_PP_OD_POS)
+#define LPS22HH_CR2_PP_OD               (0x01U << LPS22HH_CR2_PP_OD_POS)
 #define LPS22HH_CR2_INT_H_L_POS         (6)
-#define LPS22HH_CR2_INT_H_L             (0X01U << LPS22HH_CR2_INT_H_L_POS)
+#define LPS22HH_CR2_INT_H_L             (0x01U << LPS22HH_CR2_INT_H_L_POS)
 #define LPS22HH_CR2_BOOT_POS            (7)
-#define LPS22HH_CR2_BOOT                (0X01U << LPS22HH_CR2_BOOT_POS)
+#define LPS22HH_CR2_BOOT                (0x01U << LPS22HH_CR2_BOOT_POS)
 
-// CTRL_REG3
+// LPS22HH_CTRL_REG3
 #define LPS22HH_CR3_INT_S_POS           (0)
-#define LPS22HH_CR3_INT_S_DATA_SIG      (0X00U << LPS22HH_CR3_INT_S_POS)
-#define LPS22HH_CR3_INT_S_PH            (0X01U << LPS22HH_CR3_INT_S_POS)
-#define LPS22HH_CR3_INT_S_PL            (0X02U << LPS22HH_CR3_INT_S_POS)
-#define LPS22HH_CR3_INT_S_PHL           (0X03U << LPS22HH_CR3_INT_S_POS)
+#define LPS22HH_CR3_INT_S_DATA_SIG      (0x00U << LPS22HH_CR3_INT_S_POS)
+#define LPS22HH_CR3_INT_S_PH            (0x01U << LPS22HH_CR3_INT_S_POS)
+#define LPS22HH_CR3_INT_S_PL            (0x02U << LPS22HH_CR3_INT_S_POS)
+#define LPS22HH_CR3_INT_S_PHL           (0x03U << LPS22HH_CR3_INT_S_POS)
 #define LPS22HH_CR3_DRDY_POS            (2)
-#define LPS22HH_CR3_DRDY                (0X00U << LPS22HH_CR3_DRDY_POS)
+#define LPS22HH_CR3_DRDY                (0x00U << LPS22HH_CR3_DRDY_POS)
 #define LPS22HH_CR3_INT_F_OVR_POS       (3)
-#define LPS22HH_CR3_INT_F_OVR           (0X00U << LPS22HH_CR3_INT_F_OVR_POS)
+#define LPS22HH_CR3_INT_F_OVR           (0x01U << LPS22HH_CR3_INT_F_OVR_POS)
 #define LPS22HH_CR3_INT_F_WTM_POS       (4)
-#define LPS22HH_CR3_INT_F_WTM           (0X00U << LPS22HH_CR3_INT_F_WTM_POS)
+#define LPS22HH_CR3_INT_F_WTM           (0x01U << LPS22HH_CR3_INT_F_WTM_POS)
 #define LPS22HH_CR3_INT_F_FULL_POS      (5)
-#define LPS22HH_CR3_INT_F_FULL          (0X00U << LPS22HH_CR3_INT_F_FULL_POS)
+#define LPS22HH_CR3_INT_F_FULL          (0x01U << LPS22HH_CR3_INT_F_FULL_POS)
 
+// LPS22HH_INT_SOURCE
+#define LPS22HH_ITS_PH_POS              (0)
+#define LPS22HH_ITS_PH                  (0x01 << LPS22HH_ITS_PH_POS)
+#define LPS22HH_ITS_PL_POS              (1)
+#define LPS22HH_ITS_PL                  (0x01 << LPS22HH_ITS_PL_POS)
+#define LPS22HH_ITS_IA_POS              (2)
+#define LPS22HH_ITS_IA                  (0x01 << LPS22HH_ITS_IA_POS)
 
+// typedef struct
+// {
+//     u8 p_da;
+//     u8 t_da;
+//     u8 p_or;
+//     u8 t_or;
+// } LPS22HH_STATUS_Typedef;
+// LPS22HH_STATUS_Typedef LPS22HH_STATUS_Initstruct;
 
 #endif
 LPS22HH_Error_Typedef LPS22HH_Reg_Write(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
 LPS22HH_Error_Typedef LPS22HH_Reg_Read(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
 u8 LPS22HH_WHO_AM_I_Get(I2C_TypeDef *I2Cx);
-LPS22HH_Error_Typedef LPS22HH_Init(I2C_TypeDef *I2Cx);
+LPS22HH_Error_Typedef LPS22HH_Init_OneShot(I2C_TypeDef *I2Cx);
+LPS22HH_Error_Typedef LPS22HH_Init_Frequency(I2C_TypeDef *I2Cx);
 LPS22HH_Error_Typedef LPS22HH_DeInit(I2C_TypeDef *I2Cx);
-LPS22HH_Error_Typedef LPS22HH_PRESS_OUT_Get(I2C_TypeDef *I2Cx, int16_t *P_OUT);
-LPS22HH_Error_Typedef LPS22HH_TEMP_OUT_Get(I2C_TypeDef *I2Cx, int16_t *T_OUT);
-LPS22HH_Error_Typedef LPS22HH_Pressure_Calculation(I2C_TypeDef *I2Cx, int16_t *value);
+LPS22HH_Error_Typedef LPS22HH_Interrupt_Enable(I2C_TypeDef *I2Cx, u8 it, FunctionalState state);
+FlagStatus LPS22HH_INT_SOURCE_Get(I2C_TypeDef *I2Cx, u8 flag);
+LPS22HH_Error_Typedef LPS22HH_PRESS_OUT_Get_OneShot(I2C_TypeDef *I2Cx, int32_t *P_OUT);
+LPS22HH_Error_Typedef LPS22HH_TEMP_OUT_Get_OneShot(I2C_TypeDef *I2Cx, int16_t *T_OUT);
+LPS22HH_Error_Typedef LPS22HH_PRESS_OUT_Get_Frequency(I2C_TypeDef *I2Cx, int32_t *P_OUT);
+LPS22HH_Error_Typedef LPS22HH_TEMP_OUT_Get_Frequency(I2C_TypeDef *I2Cx, int16_t *T_OUT);
+LPS22HH_Error_Typedef LPS22HH_Pressure_Calculation(I2C_TypeDef *I2Cx, int32_t *value);
 LPS22HH_Error_Typedef LPS22HH_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t *value);
+void LPS22HH_Altitude_Calculation(int32_t press_value);
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

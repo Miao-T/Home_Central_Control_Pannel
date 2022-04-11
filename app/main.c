@@ -89,14 +89,20 @@ int main(void)
     //     printf("Sorry, No I2C Slave Device is connected");
     // }
 
-    LPS22HH_Init(I2C2);
-    u8 temp = 0;
-    // Sensor_Read(I2C2, 0xB8, 0x0F, &temp, 1);
-    int16_t pressure = 0;
+    LPS22HH_Init_OneShot(I2C2);
+    LPS22HH_Interrupt_Enable(I2C2, LPS22HH_IT_PHE, ENABLE);
+    // u8 temp = 0;
+    // Sensor_Read(I2C2, 0xB8, 0x0E, &temp, 1);
+    int32_t pressure = 0;
     int16_t temperature = 0;
     LPS22HH_Pressure_Calculation(I2C2, &pressure);
     LPS22HH_Temperature_Calculation(I2C2, &temperature);
+    LPS22HH_Altitude_Calculation(pressure);
+    if(LPS22HH_INT_SOURCE_Get(I2C2, LPS22HH_ITS_PH_FLAG)){
+        printf("high pressure interrupt happened");
+    }
 
+    /*                  HTS221               */
     // HTS221_Init(I2C2);
     // HTS221_Temperature_Calibration_Get(I2C2);
     // HTS221_Humidity_Calibration_Get(I2C2);
@@ -106,11 +112,8 @@ int main(void)
     // HTS221_Temperature_Calculation(I2C2, &temperature);
     while (1) {
         LD1_on();
-        // if(Key1()){
-        //     HTS221_Temperature_Calculation(I2C2, &temperature);
-        // }else if(Key2()){
-        //     HTS221_Humidity_Calculation(I2C2, &humidity);
-        // }
+        // LPS22HH_Pressure_Calculation(I2C2, &pressure);
+        // LPS22HH_Temperature_Calculation(I2C2, &temperature);
     }
 }
 
