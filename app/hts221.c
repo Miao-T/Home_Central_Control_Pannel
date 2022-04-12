@@ -37,15 +37,21 @@ u8 HTS221_WHO_AM_I_Get(I2C_TypeDef *I2Cx)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-HTS221_Error_Typedef HTS221_Init(I2C_TypeDef *I2Cx)
+HTS221_Error_Typedef HTS221_Init(I2C_TypeDef *I2Cx, bool oneshot, u8 frequency)
 {
     u8 buffer[4] = {0, 0, 0, 0};
-    buffer[0] = HTS221_CR1_PD | HTS221_CR1_BDU | HTS221_CR1_ODR0 | HTS221_CR1_ODR1;                                 // Set PD and BDU in CTRL_REG1
+    if(oneshot){
+        // Set PD / BDU and ODR in CTRL_REG1
+        buffer[0] = HTS221_CR1_PD | HTS221_CR1_BDU | HTS221_CR1_ODR_ONESHOT;
+    }else{
+        // Set PD / BDU and ODR in CTRL_REG1
+        buffer[0] = HTS221_CR1_PD | HTS221_CR1_BDU | frequency << HTS221_CR1_ODR_POS;
+    }
     buffer[1] = 0x00;                                                           // Clear CTRL_REG2
     buffer[2] = 0x00;                                                           // Clear CTRL_REG3
     buffer[3] = HTS221_AC_AVGH_32 | HTS221_AC_AVGT_16;                          // Set AVGH and AVGT in AV_CONF
 
-    if(HTS221_WHO_AM_I_Get(I2Cx) == DEVICE_ID_WHO_AM_I){
+    if(HTS221_WHO_AM_I_Get(I2Cx) == DEVICE_ID_WHO_AM_I){                        // Check Device ID
         if(HTS221_Reg_Write(I2Cx, CONTINUOUS_ADDRESS(HTS221_CTRL_REG1), buffer, 3))
             return HTS221_ERROR;
         if(HTS221_Reg_Write(I2Cx, HTS221_AV_CONF, &buffer[3], 1))
@@ -116,9 +122,7 @@ HTS221_Error_Typedef HTS221_Temperature_Calibration_Get(I2C_TypeDef *I2Cx)
 HTS221_Error_Typedef HTS221_HUMIDITY_OUT_Get(I2C_TypeDef *I2Cx, int16_t *H_T_OUT)
 {
     u8 buffer[2] = {0, 0};
-    u8 one_shot = HTS221_CR2_ONE_SHOT;
-    if(HTS221_Reg_Write(I2Cx, HTS221_CTRL_REG2, &one_shot, 1))
-        return HTS221_ERROR;
+    // Read HUMIDITY_OUT_L and HUMIDITY_OUT_H continuously
     if(HTS221_Reg_Read(I2Cx, CONTINUOUS_ADDRESS(HTS221_HUMIDITY_OUT_L), buffer, 2))
         return HTS221_ERROR;
     *H_T_OUT = (uint16_t)(buffer[1] << 8) | (uint16_t)buffer[0];
@@ -129,9 +133,7 @@ HTS221_Error_Typedef HTS221_HUMIDITY_OUT_Get(I2C_TypeDef *I2Cx, int16_t *H_T_OUT
 HTS221_Error_Typedef HTS221_TEMPERATURE_OUT_Get(I2C_TypeDef *I2Cx, int16_t *T_OUT)
 {
     u8 buffer[2] = {0, 0};
-    u8 one_shot = HTS221_CR2_ONE_SHOT;
-    if(HTS221_Reg_Write(I2Cx, HTS221_CTRL_REG2, &one_shot, 1))
-        return HTS221_ERROR;
+    // Read TEMP_OUT_L and TEMP_OUT_H continuously
     if(HTS221_Reg_Read(I2Cx, CONTINUOUS_ADDRESS(HTS221_TEMP_OUT_L), buffer, 2))
         return HTS221_ERROR;
     *T_OUT = (uint16_t)(buffer[1] << 8) | (uint16_t)buffer[0];
@@ -142,6 +144,7 @@ HTS221_Error_Typedef HTS221_TEMPERATURE_OUT_Get(I2C_TypeDef *I2Cx, int16_t *T_OU
 HTS221_Error_Typedef HTS221_Humidity_Calculation(I2C_TypeDef *I2Cx, uint16_t *value)
 {
     int16_t H_T_OUT = 0x00;
+    // Read HUMIDITY_OUT registers
     if(HTS221_HUMIDITY_OUT_Get(I2Cx, &H_T_OUT))
         return HTS221_ERROR;
 
@@ -159,6 +162,7 @@ HTS221_Error_Typedef HTS221_Humidity_Calculation(I2C_TypeDef *I2Cx, uint16_t *va
 HTS221_Error_Typedef HTS221_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t *value)
 {
     int16_t T_OUT = 0x00;
+    // Read TEMP_OUT registers
     if(HTS221_TEMPERATURE_OUT_Get(I2Cx, &T_OUT))
         return HTS221_ERROR;
 
@@ -166,5 +170,28 @@ HTS221_Error_Typedef HTS221_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t *
     temp = ((int32_t)(T_OUT - T_Cal_InitStruct.T0_OUT)) * (((int32_t)(T_Cal_InitStruct.T1_degC - T_Cal_InitStruct.T0_degC) * 10));
     *value = (temp / (T_Cal_InitStruct.T1_OUT - T_Cal_InitStruct.T0_OUT)) + T_Cal_InitStruct.T0_degC * 10;
     printf("Get Temperature value : %d.%d C \n", *value / 10, *value % 10);
+    return HTS221_OK;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+HTS221_Error_Typedef HTS221_Calculation(I2C_TypeDef *I2Cx, uint16_t *h_value, int16_t *t_value, bool oneshot)
+{
+    if(oneshot){
+        u8 one_shot = HTS221_CR2_ONE_SHOT;
+        // oneshot trigger
+        if(HTS221_Reg_Write(I2Cx, HTS221_CTRL_REG2, &one_shot, 1))
+            return HTS221_ERROR;
+    }
+    u8 buffer = 0x00;
+    if(HTS221_Reg_Read(I2Cx, HTS221_STATUS_REG, &buffer, 1))
+        return HTS221_ERROR;
+    // wait for humidity data available
+    if(buffer && HTS221_STATUS_H_DA != 0){
+        HTS221_Humidity_Calculation(I2Cx, h_value);
+    }
+    // wait for temp data available
+    if(buffer && HTS221_STATUS_T_DA != 0){
+        HTS221_Temperature_Calculation(I2Cx, t_value);
+    }
     return HTS221_OK;
 }

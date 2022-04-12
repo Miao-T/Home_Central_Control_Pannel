@@ -89,31 +89,38 @@ int main(void)
     //     printf("Sorry, No I2C Slave Device is connected");
     // }
 
-    LPS22HH_Init_OneShot(I2C2);
-    LPS22HH_Interrupt_Enable(I2C2, LPS22HH_IT_PHE, ENABLE);
-    // u8 temp = 0;
-    // Sensor_Read(I2C2, 0xB8, 0x0E, &temp, 1);
-    int32_t pressure = 0;
-    int16_t temperature = 0;
-    LPS22HH_Pressure_Calculation(I2C2, &pressure);
-    LPS22HH_Temperature_Calculation(I2C2, &temperature);
-    LPS22HH_Altitude_Calculation(pressure);
-    if(LPS22HH_INT_SOURCE_Get(I2C2, LPS22HH_ITS_PH_FLAG)){
-        printf("high pressure interrupt happened");
-    }
+    /*                  LPS22HH               */
+    LPS22HH_Init(I2C2, DISABLE, LPS22HH_OUTPUT_DATA_RATE_1);
+    LPS22HH_FIFO_Init(I2C2, LPS22HH_FIFO_MODE_FIFO, ENABLE, 0x0A);
+    u8 data[2] = {0, 0};
+    Sensor_Read(I2C2, 0XB8, 0X13, data, 2);
+    printf("LPS22HH READY \n");
+    // u8 ths_p[2] = {0x01, 0x00};
+    // LPS22HH_Interrupt_Enable(I2C2, LPS22HH_IT_PHE, LPS22HH_IT_MODE_AUTOREFP, ths_p);
+    int32_t pressure_lps = 0;
+    int16_t temperature_lps = 0;
 
     /*                  HTS221               */
-    // HTS221_Init(I2C2);
-    // HTS221_Temperature_Calibration_Get(I2C2);
-    // HTS221_Humidity_Calibration_Get(I2C2);
-    // printf("HTS221 READY \n");
-    // int16_t temperature = 0;
-    // uint16_t humidity = 0;
-    // HTS221_Temperature_Calculation(I2C2, &temperature);
+    HTS221_Init(I2C2, DISABLE, HTS221_OUTPUT_DATA_RATE_1);
+    HTS221_Temperature_Calibration_Get(I2C2);
+    HTS221_Humidity_Calibration_Get(I2C2);
+    printf("HTS221 READY \n");
+    int16_t temperature_hts = 0;
+    uint16_t humidity_hts = 0;
+
     while (1) {
         LD1_on();
-        // LPS22HH_Pressure_Calculation(I2C2, &pressure);
-        // LPS22HH_Temperature_Calculation(I2C2, &temperature);
+        // HTS221_Calculation(I2C2, &humidity_hts, &temperature_hts, DISABLE);
+        LPS22HH_Calculation(I2C2, &pressure_lps, &temperature_lps, DISABLE, ENABLE);
+
+        u8 ptr[2] = {0x00, 0x00};
+        Sensor_Read(I2C2, 0xB8, 0x25, &ptr[0], 1);
+        Sensor_Read(I2C2, 0xB8, 0x26, &ptr[1], 1);
+        printf("status is %d, %d \n", ptr[0], ptr[1]);
+
+        // if(LPS22HH_INT_SOURCE_Get(I2C2, LPS22HH_ITS_PH_FLAG)){
+        //     printf("high pressure interrupt happened");
+        // }
     }
 }
 

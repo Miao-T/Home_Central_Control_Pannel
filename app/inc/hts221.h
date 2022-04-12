@@ -14,6 +14,15 @@ typedef enum {
 } HTS221_State_Typedef;
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @defgroup HTS221 Output data rate
+/// @{
+#define HTS221_OUTPUT_DATA_ONESHOT      0x00
+#define HTS221_OUTPUT_DATA_RATE_1       0x01
+#define HTS221_OUTPUT_DATA_RATE_7       0x02
+#define HTS221_OUTPUT_DATA_RATE_12_5    0x03
+/// @}
+
+////////////////////////////////////////////////////////////////////////////////
 #ifdef _HTS221_C_
 
 // Read or Write registers continuously by setting register address MSB high
@@ -53,51 +62,58 @@ typedef enum {
 // HTS221 Device ID
 #define DEVICE_ID_WHO_AM_I              0xBC
 
-// AV_CONF
-#define HTS221_AC_AVGH_Pos              (0)
-#define HTS221_AC_AVGH_4                (0x00U << HTS221_AC_AVGH_Pos)
-#define HTS221_AC_AVGH_8                (0x01U << HTS221_AC_AVGH_Pos)
-#define HTS221_AC_AVGH_16               (0x02U << HTS221_AC_AVGH_Pos)
-#define HTS221_AC_AVGH_32               (0x03U << HTS221_AC_AVGH_Pos)
-#define HTS221_AC_AVGH_64               (0x04U << HTS221_AC_AVGH_Pos)
-#define HTS221_AC_AVGH_128              (0x05U << HTS221_AC_AVGH_Pos)
-#define HTS221_AC_AVGH_256              (0x06U << HTS221_AC_AVGH_Pos)
-#define HTS221_AC_AVGH_512              (0x07U << HTS221_AC_AVGH_Pos)
-#define HTS221_AC_AVGT_Pos              (3)
-#define HTS221_AC_AVGT_2                (0x00U << HTS221_AC_AVGT_Pos)
-#define HTS221_AC_AVGT_4                (0x01U << HTS221_AC_AVGT_Pos)
-#define HTS221_AC_AVGT_8                (0x02U << HTS221_AC_AVGT_Pos)
-#define HTS221_AC_AVGT_16               (0x03U << HTS221_AC_AVGT_Pos)
-#define HTS221_AC_AVGT_32               (0x04U << HTS221_AC_AVGT_Pos)
-#define HTS221_AC_AVGT_64               (0x05U << HTS221_AC_AVGT_Pos)
-#define HTS221_AC_AVGT_128              (0x06U << HTS221_AC_AVGT_Pos)
-#define HTS221_AC_AVGT_256              (0x07U << HTS221_AC_AVGT_Pos)
+// HTS221_AV_CONF
+#define HTS221_AC_AVGH_POS              (0)
+#define HTS221_AC_AVGH_4                (0x00U << HTS221_AC_AVGH_POS)
+#define HTS221_AC_AVGH_8                (0x01U << HTS221_AC_AVGH_POS)
+#define HTS221_AC_AVGH_16               (0x02U << HTS221_AC_AVGH_POS)
+#define HTS221_AC_AVGH_32               (0x03U << HTS221_AC_AVGH_POS)
+#define HTS221_AC_AVGH_64               (0x04U << HTS221_AC_AVGH_POS)
+#define HTS221_AC_AVGH_128              (0x05U << HTS221_AC_AVGH_POS)
+#define HTS221_AC_AVGH_256              (0x06U << HTS221_AC_AVGH_POS)
+#define HTS221_AC_AVGH_512              (0x07U << HTS221_AC_AVGH_POS)
+#define HTS221_AC_AVGT_POS              (3)
+#define HTS221_AC_AVGT_2                (0x00U << HTS221_AC_AVGT_POS)
+#define HTS221_AC_AVGT_4                (0x01U << HTS221_AC_AVGT_POS)
+#define HTS221_AC_AVGT_8                (0x02U << HTS221_AC_AVGT_POS)
+#define HTS221_AC_AVGT_16               (0x03U << HTS221_AC_AVGT_POS)
+#define HTS221_AC_AVGT_32               (0x04U << HTS221_AC_AVGT_POS)
+#define HTS221_AC_AVGT_64               (0x05U << HTS221_AC_AVGT_POS)
+#define HTS221_AC_AVGT_128              (0x06U << HTS221_AC_AVGT_POS)
+#define HTS221_AC_AVGT_256              (0x07U << HTS221_AC_AVGT_POS)
 
-// CTRL_REG1
-#define HTS221_CR1_ODR0_Pos             (0)
-#define HTS221_CR1_ODR0                 (0x01U << HTS221_CR1_ODR0_Pos)
-#define HTS221_CR1_ODR1_Pos             (1)
-#define HTS221_CR1_ODR1                 (0x01U << HTS221_CR1_ODR1_Pos)
-#define HTS221_CR1_BDU_Pos              (2)
-#define HTS221_CR1_BDU                  (0x01U << HTS221_CR1_BDU_Pos)
-#define HTS221_CR1_PD_Pos               (7)
-#define HTS221_CR1_PD                   (0x01U << HTS221_CR1_PD_Pos)
+// HTS221_CTRL_REG1
+#define HTS221_CR1_ODR_POS              (0)
+#define HTS221_CR1_ODR_ONESHOT          (0x00U << HTS221_CR1_ODR_POS)
+#define HTS221_CR1_ODR_1                (0x01U << HTS221_CR1_ODR_POS)
+#define HTS221_CR1_ODR_7                (0x02U << HTS221_CR1_ODR_POS)
+#define HTS221_CR1_ODR_12_5             (0x03U << HTS221_CR1_ODR_POS)
+#define HTS221_CR1_BDU_POS              (2)
+#define HTS221_CR1_BDU                  (0x01U << HTS221_CR1_BDU_POS)
+#define HTS221_CR1_PD_POS               (7)
+#define HTS221_CR1_PD                   (0x01U << HTS221_CR1_PD_POS)
 
-// CTRL_REG2
-#define HTS221_CR2_ONE_SHOT_Pos         (0)
-#define HTS221_CR2_ONE_SHOT             (0x01U << HTS221_CR2_ONE_SHOT_Pos)
-#define HTS221_CR2_HEATER_Pos           (1)
-#define HTS221_CR2_HEATER               (0x01U << HTS221_CR2_HEATER_Pos)
-#define HTS221_CR2_BOOT_Pos             (7)
-#define HTS221_CR2_BOOT                 (0x01U << HTS221_CR2_BOOT_Pos)
+// HTS221_CTRL_REG2
+#define HTS221_CR2_ONE_SHOT_POS         (0)
+#define HTS221_CR2_ONE_SHOT             (0x01U << HTS221_CR2_ONE_SHOT_POS)
+#define HTS221_CR2_HEATER_POS           (1)
+#define HTS221_CR2_HEATER               (0x01U << HTS221_CR2_HEATER_POS)
+#define HTS221_CR2_BOOT_POS             (7)
+#define HTS221_CR2_BOOT                 (0x01U << HTS221_CR2_BOOT_POS)
 
-// CTRL_REG3
-#define HTS221_CR3_DRDY_Pos             (2)
-#define HTS221_CR3_DRDY                 (0x01U << HTS221_CR3_DRDY_Pos)
-#define HTS221_CR3_PP_OD_Pos            (6)
-#define HTS221_CR3_PP_OD                (0x01U << HTS221_CR3_PP_OD_Pos)
-#define HTS221_CR3_DRDY_H_L_Pos         (7)
-#define HTS221_CR3_DRDY_H_L             (0x01U << HTS221_CR3_DRDY_H_L_Pos)
+// HTS221_CTRL_REG3
+#define HTS221_CR3_DRDY_POS             (2)
+#define HTS221_CR3_DRDY                 (0x01U << HTS221_CR3_DRDY_POS)
+#define HTS221_CR3_PP_OD_POS            (6)
+#define HTS221_CR3_PP_OD                (0x01U << HTS221_CR3_PP_OD_POS)
+#define HTS221_CR3_DRDY_H_L_POS         (7)
+#define HTS221_CR3_DRDY_H_L             (0x01U << HTS221_CR3_DRDY_H_L_POS)
+
+// HTS221_STATUS_REG
+#define HTS221_STATUS_T_DA_POS          (0)
+#define HTS221_STATUS_T_DA              (0x01U << HTS221_STATUS_T_DA_POS)
+#define HTS221_STATUS_H_DA_POS          (1)
+#define HTS221_STATUS_H_DA              (0x01U << HTS221_STATUS_H_DA_POS)
 
 typedef struct
 {
@@ -126,7 +142,7 @@ HTS221_T_Cal_Typedef T_Cal_InitStruct;
 HTS221_Error_Typedef HTS221_Reg_Write(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
 HTS221_Error_Typedef HTS221_Reg_Read(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
 u8 HTS221_WHO_AM_I_Get(I2C_TypeDef *I2Cx);
-HTS221_Error_Typedef HTS221_Init(I2C_TypeDef *I2Cx);
+HTS221_Error_Typedef HTS221_Init(I2C_TypeDef *I2Cx, bool oneshot, u8 frequency);
 HTS221_Error_Typedef HTS221_DeInit(I2C_TypeDef *I2Cx);
 HTS221_Error_Typedef HTS221_Humidity_Calibration_Get(I2C_TypeDef *I2Cx);
 HTS221_Error_Typedef HTS221_Temperature_Calibration_Get(I2C_TypeDef *I2Cx);
@@ -134,6 +150,7 @@ HTS221_Error_Typedef HTS221_HUMIDITY_OUT_Get(I2C_TypeDef *I2Cx, int16_t *H_T_OUT
 HTS221_Error_Typedef HTS221_TEMPERATURE_OUT_Get(I2C_TypeDef *I2Cx, int16_t *T_OUT);
 HTS221_Error_Typedef HTS221_Humidity_Calculation(I2C_TypeDef *I2Cx, uint16_t *value);
 HTS221_Error_Typedef HTS221_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t *value);
+HTS221_Error_Typedef HTS221_Calculation(I2C_TypeDef *I2Cx, uint16_t *h_value, int16_t *t_value, bool oneshot);
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

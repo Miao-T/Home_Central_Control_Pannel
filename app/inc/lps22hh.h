@@ -23,7 +23,9 @@ typedef enum {
 ////////////////////////////////////////////////////////////////////////////////
 /// @defgroup HPS22HH Interrupt Mode Definition
 /// @{
+#define LPS22HH_IT_MODE_RESETAZ         0x10
 #define LPS22HH_IT_MODE_AUTOZERO        0x20
+#define LPS22HH_IT_MODE_RESETARP        0x40
 #define LPS22HH_IT_MODE_AUTOREFP        0x80
 /// @}
 
@@ -33,6 +35,30 @@ typedef enum {
 #define LPS22HH_ITS_PH_FLAG             0x01
 #define LPS22HH_ITS_PL_FLAG             0x02
 #define LPS22HH_ITS_IA_FLAG             0x04
+/// @}
+
+////////////////////////////////////////////////////////////////////////////////
+/// @defgroup LPS22HH Output data rate
+/// @{
+#define LPS22HH_OUTPUT_DATA_ONESHOT     0x00
+#define LPS22HH_OUTPUT_DATA_RATE_1      0x01
+#define LPS22HH_OUTPUT_DATA_RATE_10     0x02
+#define LPS22HH_OUTPUT_DATA_RATE_25     0x03
+#define LPS22HH_OUTPUT_DATA_RATE_50     0x04
+#define LPS22HH_OUTPUT_DATA_RATE_75     0x05
+#define LPS22HH_OUTPUT_DATA_RATE_100    0x06
+#define LPS22HH_OUTPUT_DATA_RATE_200    0x07
+/// @}
+
+////////////////////////////////////////////////////////////////////////////////
+/// @defgroup LPS22HH FIFO mode
+/// @{
+#define LPS22HH_FIFO_MODE_BYPASS               0x00
+#define LPS22HH_FIFO_MODE_FIFO                 0x01
+#define LPS22HH_FIFO_MODE_CONTINUOUS           0x02
+#define LPS22HH_FIFO_MODE_BYPASS_2_FIFO        0x05
+#define LPS22HH_FIFO_MODE_BYPASS_2_CONTINUOUS  0x06
+#define LPS22HH_FIFO_MODE_CONTINUOUS_2_FIFO    0x07
 /// @}
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -159,6 +185,17 @@ typedef enum {
 #define LPS22HH_CR3_INT_F_FULL_POS      (5)
 #define LPS22HH_CR3_INT_F_FULL          (0x01U << LPS22HH_CR3_INT_F_FULL_POS)
 
+// LPS22HH_FIFO_CTRL
+#define LPS22HH_FC_MODE_POS             (0)
+#define LPS22HH_FC_BYPASS               (0x00U << LPS22HH_FC_MODE_POS)
+#define LPS22HH_FC_FIFO                 (0x01U << LPS22HH_FC_MODE_POS)
+#define LPS22HH_FC_CONTINUOUS           (0x02U << LPS22HH_FC_MODE_POS)
+#define LPS22HH_FC_BYPASS_2_FIFO        (0x05U << LPS22HH_FC_MODE_POS)
+#define LPS22HH_FC_BYPASS_2_CONTINUOUS  (0x06U << LPS22HH_FC_MODE_POS)
+#define LPS22HH_FC_CONTINUOUS_2_FIFO    (0x07U << LPS22HH_FC_MODE_POS)
+#define LPS22HH_FC_STOP_ON_WTM_POS      (3)
+#define LPS22HH_FC_STOP_ON_WTM          (0x01 << LPS22HH_FC_STOP_ON_WTM_POS)
+
 // LPS22HH_INT_SOURCE
 #define LPS22HH_ITS_PH_POS              (0)
 #define LPS22HH_ITS_PH                  (0x01 << LPS22HH_ITS_PH_POS)
@@ -166,6 +203,24 @@ typedef enum {
 #define LPS22HH_ITS_PL                  (0x01 << LPS22HH_ITS_PL_POS)
 #define LPS22HH_ITS_IA_POS              (2)
 #define LPS22HH_ITS_IA                  (0x01 << LPS22HH_ITS_IA_POS)
+
+// LPS22HH_FIFO_STATUS2
+#define LPS22HH_FSTA_FULL_IA_POS        (0)
+#define LPS22HH_FSTA_FULL_IA            (0x01 << LPS22HH_FSTA_FULL_IA_POS)
+#define LPS22HH_FSTA_OVR_IA_POS         (1)
+#define LPS22HH_FSTA_OVR_IA             (0x01 << LPS22HH_FSTA_OVR_IA_POS)
+#define LPS22HH_FSTA_WTM_IA_POS         (2)
+#define LPS22HH_FSTA_WTM_IA             (0x01 << LPS22HH_FSTA_WTM_IA_POS)
+
+// LPS22HH_STATUS
+#define LPS22HH_STATUS_P_DA_POS         (0)
+#define LPS22HH_STATUS_P_DA             (1 << LPS22HH_STATUS_P_DA_POS)
+#define LPS22HH_STATUS_T_DA_POS         (1)
+#define LPS22HH_STATUS_T_DA             (1 << LPS22HH_STATUS_T_DA_POS)
+#define LPS22HH_STATUS_P_OR_POS         (4)
+#define LPS22HH_STATUS_P_OR             (1 << LPS22HH_STATUS_P_OR_POS)
+#define LPS22HH_STATUS_T_OR_POS         (5)
+#define LPS22HH_STATUS_T_OR             (1 << LPS22HH_STATUS_T_OR_POS)
 
 // typedef struct
 // {
@@ -180,18 +235,18 @@ typedef enum {
 LPS22HH_Error_Typedef LPS22HH_Reg_Write(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
 LPS22HH_Error_Typedef LPS22HH_Reg_Read(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
 u8 LPS22HH_WHO_AM_I_Get(I2C_TypeDef *I2Cx);
-LPS22HH_Error_Typedef LPS22HH_Init_OneShot(I2C_TypeDef *I2Cx);
-LPS22HH_Error_Typedef LPS22HH_Init_Frequency(I2C_TypeDef *I2Cx);
+LPS22HH_Error_Typedef LPS22HH_Software_Reset(I2C_TypeDef *I2Cx);
+LPS22HH_Error_Typedef LPS22HH_Init(I2C_TypeDef *I2Cx, bool oneshot, u8 frequency);
 LPS22HH_Error_Typedef LPS22HH_DeInit(I2C_TypeDef *I2Cx);
-LPS22HH_Error_Typedef LPS22HH_Interrupt_Enable(I2C_TypeDef *I2Cx, u8 it, FunctionalState state);
+LPS22HH_Error_Typedef LPS22HH_FIFO_Init(I2C_TypeDef *I2Cx, u8 fifoMode, bool wtm, u8 watermark);
+LPS22HH_Error_Typedef LPS22HH_Interrupt_Enable(I2C_TypeDef *I2Cx, u8 it, u8 mode, u8 *THS_P);
 FlagStatus LPS22HH_INT_SOURCE_Get(I2C_TypeDef *I2Cx, u8 flag);
-LPS22HH_Error_Typedef LPS22HH_PRESS_OUT_Get_OneShot(I2C_TypeDef *I2Cx, int32_t *P_OUT);
-LPS22HH_Error_Typedef LPS22HH_TEMP_OUT_Get_OneShot(I2C_TypeDef *I2Cx, int16_t *T_OUT);
-LPS22HH_Error_Typedef LPS22HH_PRESS_OUT_Get_Frequency(I2C_TypeDef *I2Cx, int32_t *P_OUT);
-LPS22HH_Error_Typedef LPS22HH_TEMP_OUT_Get_Frequency(I2C_TypeDef *I2Cx, int16_t *T_OUT);
-LPS22HH_Error_Typedef LPS22HH_Pressure_Calculation(I2C_TypeDef *I2Cx, int32_t *value);
-LPS22HH_Error_Typedef LPS22HH_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t *value);
-void LPS22HH_Altitude_Calculation(int32_t press_value);
+LPS22HH_Error_Typedef LPS22HH_PRESS_OUT_Get(I2C_TypeDef *I2Cx, int32_t *P_OUT, bool fifo);
+LPS22HH_Error_Typedef LPS22HH_TEMP_OUT_Get(I2C_TypeDef *I2Cx, int16_t *T_OUT, bool fifo);
+LPS22HH_Error_Typedef LPS22HH_Pressure_Calculation(I2C_TypeDef *I2Cx, int32_t *value, bool fifo);
+LPS22HH_Error_Typedef LPS22HH_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t *value, bool fifo);
+LPS22HH_Error_Typedef LPS22HH_Calculation(I2C_TypeDef *I2Cx, int32_t *p_value, int16_t *t_value, bool oneshot, bool fifo);
+void LPS22HH_Altitude_Calculation(int32_t *p_value);
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////
