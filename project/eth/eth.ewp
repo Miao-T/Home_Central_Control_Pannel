@@ -983,7 +983,7 @@
       <name>$PROJ_DIR$\..\..\app\i2c.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\app\lps22hh.c</name>
+      <name>$PROJ_DIR$\..\..\app\lps22hb.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\app\main.c</name>

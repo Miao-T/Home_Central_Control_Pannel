@@ -36,7 +36,7 @@
 #include "uart.h"
 #include "i2c.h"
 #include "hts221.h"
-#include "lps22hh.h"
+#include "lps22hb.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @addtogroup MM32_Example_Layer
@@ -90,11 +90,10 @@ int main(void)
     // }
 
     /*                  LPS22HH               */
-    LPS22HH_Init(I2C2, DISABLE, LPS22HH_OUTPUT_DATA_RATE_1);
-    LPS22HH_FIFO_Init(I2C2, LPS22HH_FIFO_MODE_FIFO, ENABLE, 0x0A);
-    u8 data[2] = {0, 0};
-    Sensor_Read(I2C2, 0XB8, 0X13, data, 2);
-    printf("LPS22HH READY \n");
+    LPS22HB_Init(I2C2, DISABLE, LPS22HB_OUTPUT_DATA_RATE_10);
+    LPS22HB_FIFO_Init(I2C2, LPS22HB_FIFO_MODE_FIFO, DISABLE, 0x00);
+
+    printf("LPS22HB READY \n");
     // u8 ths_p[2] = {0x01, 0x00};
     // LPS22HH_Interrupt_Enable(I2C2, LPS22HH_IT_PHE, LPS22HH_IT_MODE_AUTOREFP, ths_p);
     int32_t pressure_lps = 0;
@@ -111,12 +110,7 @@ int main(void)
     while (1) {
         LD1_on();
         // HTS221_Calculation(I2C2, &humidity_hts, &temperature_hts, DISABLE);
-        LPS22HH_Calculation(I2C2, &pressure_lps, &temperature_lps, DISABLE, ENABLE);
-
-        u8 ptr[2] = {0x00, 0x00};
-        Sensor_Read(I2C2, 0xB8, 0x25, &ptr[0], 1);
-        Sensor_Read(I2C2, 0xB8, 0x26, &ptr[1], 1);
-        printf("status is %d, %d \n", ptr[0], ptr[1]);
+        LPS22HB_Calculation(I2C2, &pressure_lps, &temperature_lps, DISABLE, ENABLE, DISABLE);
 
         // if(LPS22HH_INT_SOURCE_Get(I2C2, LPS22HH_ITS_PH_FLAG)){
         //     printf("high pressure interrupt happened");

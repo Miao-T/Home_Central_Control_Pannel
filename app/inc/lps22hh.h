@@ -101,7 +101,7 @@ typedef enum {
 #define SLAVE_ADDRESS_READ              (SLAVE_ADDRESS << 1) | 0x01             // 0xB9
 
 // LPS22HH Device ID
-#define DEVICE_ID_WHO_AM_I              0xB1                                    // 0xB3 in intro, but 0xB1 in hardware
+#define DEVICE_ID_WHO_AM_I              0xB3
 
 // LPS22HH_INTERRUPT_CFG
 #define LPS22HH_ITC_PHE_POS             (0)
