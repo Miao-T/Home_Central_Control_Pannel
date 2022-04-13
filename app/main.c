@@ -91,7 +91,8 @@ int main(void)
 
     /*                  LPS22HH               */
     LPS22HB_Init(I2C2, DISABLE, LPS22HB_OUTPUT_DATA_RATE_10);
-    LPS22HB_FIFO_Init(I2C2, LPS22HB_FIFO_MODE_FIFO, DISABLE, 0x00);
+    LPS22HB_FIFO_Configure(LPS22HB_FIFO_MODE_FIFO, DISABLE, 0x00);
+    LPS22HB_FIFO_Init(I2C2);
 
     printf("LPS22HB READY \n");
     // u8 ths_p[2] = {0x01, 0x00};
@@ -110,7 +111,7 @@ int main(void)
     while (1) {
         LD1_on();
         // HTS221_Calculation(I2C2, &humidity_hts, &temperature_hts, DISABLE);
-        LPS22HB_Calculation(I2C2, &pressure_lps, &temperature_lps, DISABLE, ENABLE, DISABLE);
+        LPS22HB_Calculation(I2C2, &pressure_lps, &temperature_lps, DISABLE);
 
         // if(LPS22HH_INT_SOURCE_Get(I2C2, LPS22HH_ITS_PH_FLAG)){
         //     printf("high pressure interrupt happened");

@@ -215,7 +215,7 @@ typedef struct
     bool                            stop_on_fth;
     u8                              watermark;
 } LPS22HB_FIFO_Typedef;
-LPS22HB_FIFO_Typedef LPS22HB_FIFO_InitStruct;
+LPS22HB_FIFO_Typedef LPS22HB_FIFO_InitStruct = {0, LPS22HB_FIFO_MODE_BYPASS, 0, 0};
 
 #endif
 LPS22HB_Error_Typedef LPS22HB_Reg_Write(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
@@ -225,8 +225,8 @@ LPS22HB_Error_Typedef LPS22HB_Reset_Software_BOOT(I2C_TypeDef *I2Cx);
 LPS22HB_Error_Typedef LPS22HB_Init(I2C_TypeDef *I2Cx, bool oneshot, u8 frequency);
 LPS22HB_Error_Typedef LPS22HB_DeInit(I2C_TypeDef *I2Cx);
 void LPS22HB_FIFO_Configure(LPS22HB_FIFO_Mode_Typedef mode, bool fth, u8 watermark);
-LPS22HB_Error_Typedef LPS22HB_FIFO_Init(I2C_TypeDef *I2Cx, LPS22HB_FIFO_Mode_Typedef fifoMode, bool fth, u8 watermark);
-LPS22HB_Error_Typedef LPS22HB_FIFO_Restart(I2C_TypeDef *I2Cx, LPS22HB_FIFO_Mode_Typedef fifoMode, bool fth, u8 watermark);
+LPS22HB_Error_Typedef LPS22HB_FIFO_Init(I2C_TypeDef *I2Cx);
+LPS22HB_Error_Typedef LPS22HB_FIFO_Restart(I2C_TypeDef *I2Cx);
 LPS22HB_Error_Typedef LPS22HB_Interrupt_Enable(I2C_TypeDef *I2Cx, u8 it, u8 mode, u8 *THS_P);
 FlagStatus LPS22HB_INT_SOURCE_Get(I2C_TypeDef *I2Cx, u8 flag);
 LPS22HB_Error_Typedef LPS22HB_PRESS_OUT_Get(I2C_TypeDef *I2Cx, int32_t *P_OUT);
@@ -234,7 +234,7 @@ LPS22HB_Error_Typedef LPS22HB_TEMP_OUT_Get(I2C_TypeDef *I2Cx, int16_t *T_OUT);
 LPS22HB_Error_Typedef LPS22HB_Pressure_Calculation(I2C_TypeDef *I2Cx, int32_t *value);
 LPS22HB_Error_Typedef LPS22HB_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t *value);
 LPS22HB_Error_Typedef LPS22HB_FIFO_Rolling_Get(I2C_TypeDef *I2Cx, int32_t *p_value, int16_t *t_value);
-LPS22HB_Error_Typedef LPS22HB_Calculation(I2C_TypeDef *I2Cx, int32_t *p_value, int16_t *t_value, bool oneshot, bool fifo, bool fth);
+LPS22HB_Error_Typedef LPS22HB_Calculation(I2C_TypeDef *I2Cx, int32_t *p_value, int16_t *t_value, bool oneshot);
 void LPS22HB_Altitude_Calculation(int32_t *p_value);
 ////////////////////////////////////////////////////////////////////////////////
 #endif
