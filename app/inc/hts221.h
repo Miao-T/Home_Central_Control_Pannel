@@ -142,6 +142,7 @@ HTS221_T_Cal_Typedef T_Cal_InitStruct;
 HTS221_Error_Typedef HTS221_Reg_Write(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
 HTS221_Error_Typedef HTS221_Reg_Read(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
 u8 HTS221_WHO_AM_I_Get(I2C_TypeDef *I2Cx);
+HTS221_Error_Typedef HTS221_Reset_BOOT(I2C_TypeDef *I2Cx);
 HTS221_Error_Typedef HTS221_Init(I2C_TypeDef *I2Cx, bool oneshot, u8 frequency);
 HTS221_Error_Typedef HTS221_DeInit(I2C_TypeDef *I2Cx);
 HTS221_Error_Typedef HTS221_Humidity_Calibration_Get(I2C_TypeDef *I2Cx);

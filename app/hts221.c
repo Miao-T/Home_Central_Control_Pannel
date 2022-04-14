@@ -36,6 +36,14 @@ u8 HTS221_WHO_AM_I_Get(I2C_TypeDef *I2Cx)
     return device_id;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+HTS221_Error_Typedef HTS221_Reset_BOOT(I2C_TypeDef *I2Cx)
+{
+    u8 resetValue = HTS221_CR2_BOOT;
+    if(HTS221_Reg_Write(I2Cx, HTS221_CTRL_REG2, &resetValue, 1))
+         return HTS221_ERROR;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 HTS221_Error_Typedef HTS221_Init(I2C_TypeDef *I2Cx, bool oneshot, u8 frequency)
 {

@@ -16,27 +16,25 @@ typedef enum {
 typedef enum {
     LPS22HB_FIFO_MODE_BYPASS               = 0x00,
     LPS22HB_FIFO_MODE_FIFO                 = 0x01,
-    LPS22HB_FIFO_MODE_CONTINUOUS           = 0x02,
-    LPS22HB_FIFO_MODE_BYPASS_2_FIFO        = 0x05,
-    LPS22HB_FIFO_MODE_BYPASS_2_CONTINUOUS  = 0x06,
-    LPS22HB_FIFO_MODE_CONTINUOUS_2_FIFO    = 0x07
+    LPS22HB_FIFO_MODE_STREAM               = 0x02,
+    LPS22HB_FIFO_MODE_STREAM_2_FIFO        = 0x03,
+    LPS22HB_FIFO_MODE_BYPASS_2_STREAM      = 0x04,
+    LPS22HB_FIFO_MODE_DYNAMIC_STREAM       = 0x06,
+    LPS22HB_FIFO_MODE_BYPASS_2_FIFO        = 0x07
 } LPS22HB_FIFO_Mode_Typedef;
 
-////////////////////////////////////////////////////////////////////////////////
-/// @defgroup HPS22HH Interrupts Definition
-/// @{
-#define LPS22HB_IT_PHE                  0x01
-#define LPS22HB_IT_PLE                  0x02
-/// @}
+typedef enum {
+    LPS22HB_AUTORIFP_MODE_EN               = 0x80,
+    LPS22HB_AUTORIFP_MODE_DIS              = 0x40,
+    LPS22HB_AUTOZERO_MODE_EN               = 0x20,
+    LPS22HB_AUTOZERO_MODE_DIS              = 0x10
+} LPS22HB_AUTO_Mode_Typedef;
 
-////////////////////////////////////////////////////////////////////////////////
-/// @defgroup HPS22HH Interrupt Mode Definition
-/// @{
-#define LPS22HB_IT_MODE_RESETAZ         0x10
-#define LPS22HB_IT_MODE_AUTOZERO        0x20
-#define LPS22HB_IT_MODE_RESETARP        0x40
-#define LPS22HB_IT_MODE_AUTOREFP        0x80
-/// @}
+typedef enum {
+    LPS22HB_IT_PHE                         = 0x01,
+    LPS22HB_IT_PLE                         = 0x02,
+    LPS22HB_IT_PHE_PLE                     = 0x03
+} LPS22HB_IT_Mode_Typedef;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @defgroup LPS22HB Statusflags definition
@@ -224,10 +222,12 @@ u8 LPS22HB_WHO_AM_I_Get(I2C_TypeDef *I2Cx);
 LPS22HB_Error_Typedef LPS22HB_Reset_Software_BOOT(I2C_TypeDef *I2Cx);
 LPS22HB_Error_Typedef LPS22HB_Init(I2C_TypeDef *I2Cx, bool oneshot, u8 frequency);
 LPS22HB_Error_Typedef LPS22HB_DeInit(I2C_TypeDef *I2Cx);
-void LPS22HB_FIFO_Configure(LPS22HB_FIFO_Mode_Typedef mode, bool fth, u8 watermark);
+void LPS22HB_FIFO_Configure(bool fifo, LPS22HB_FIFO_Mode_Typedef mode, bool fth, u8 watermark);
 LPS22HB_Error_Typedef LPS22HB_FIFO_Init(I2C_TypeDef *I2Cx);
 LPS22HB_Error_Typedef LPS22HB_FIFO_Restart(I2C_TypeDef *I2Cx);
-LPS22HB_Error_Typedef LPS22HB_Interrupt_Enable(I2C_TypeDef *I2Cx, u8 it, u8 mode, u8 *THS_P);
+LPS22HB_Error_Typedef LPS22HB_Interrupt_Enable(I2C_TypeDef *I2Cx, LPS22HB_IT_Mode_Typedef it, u8 *THS_P);
+LPS22HB_Error_Typedef LPS22HB_DRDY_PIN_Configure(I2C_TypeDef *I2Cx, u8 int_s, u8 data_sig);
+LPS22HB_Error_Typedef LPS22HB_AUTO_Configure(I2C_TypeDef *I2Cx, LPS22HB_AUTO_Mode_Typedef autoMode);
 FlagStatus LPS22HB_INT_SOURCE_Get(I2C_TypeDef *I2Cx, u8 flag);
 LPS22HB_Error_Typedef LPS22HB_PRESS_OUT_Get(I2C_TypeDef *I2Cx, int32_t *P_OUT);
 LPS22HB_Error_Typedef LPS22HB_TEMP_OUT_Get(I2C_TypeDef *I2Cx, int16_t *T_OUT);

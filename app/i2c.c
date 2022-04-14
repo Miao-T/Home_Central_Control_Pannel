@@ -223,9 +223,8 @@ void I2C2_IRQHandler()
     }
 }
 
-I2C_SlaveScan_Typedef Scan_All_Addr(I2C_TypeDef *I2Cx, u8 *ptr)
+void Scan_All_Addr(I2C_TypeDef *I2Cx, u8 *ptr, u8 cnt)
 {
-    u8 j = 0x00;
     for(u8 i = 0x00; i <= 0x7F; i++){
         uint32_t I2C_Timeout = 0x100;
         gAbrtFlag = 0;
@@ -237,20 +236,16 @@ I2C_SlaveScan_Typedef Scan_All_Addr(I2C_TypeDef *I2Cx, u8 *ptr)
         while(gAbrtFlag == 0){
             if(--I2C_Timeout == 0){
                 printf("Device Address 0x%02x is connected \n", i << 1);
-                ptr[j++] = i << 1;
+                ptr[cnt++] = i << 1;
                 I2C_GenerateSTOP(I2Cx, ENABLE);
                 break;
             }
         }
-
-        // if(I2C_Timeout > 0 ){
-        //     printf("0x%02x error \n", i << 1);
-        // }
     }
 
-    if(ptr[0] == 0x00){
-        return SLAVE_NONE;
+    if(cnt == 0x00){
+        printf("Sorry, No I2C Slave Device is connected");
     }else{
-        return SLAVE_FOUND; 
+        printf("%d I2C Slave Device is connected", cnt);
     }
 }

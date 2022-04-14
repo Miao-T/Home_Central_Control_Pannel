@@ -42,7 +42,7 @@ u8 LPS22HB_WHO_AM_I_Get(I2C_TypeDef *I2Cx)
 LPS22HB_Error_Typedef LPS22HB_Reset_Software_BOOT(I2C_TypeDef *I2Cx)
 {
     u8 resetValue = LPS22HB_CR2_SWRESET | LPS22HB_CR2_BOOT;
-    if(LPS22HB_Reg_Read(I2Cx, LPS22HB_CTRL_REG2, &resetValue, 1))
+    if(LPS22HB_Reg_Write(I2Cx, LPS22HB_CTRL_REG2, &resetValue, 1))
         return LPS22HB_ERROR;
     return LPS22HB_OK;
 }
@@ -84,28 +84,32 @@ LPS22HB_Error_Typedef LPS22HB_DeInit(I2C_TypeDef *I2Cx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void LPS22HB_FIFO_Configure(LPS22HB_FIFO_Mode_Typedef mode, bool fth, u8 watermark)
+/// @brief  Fills each LPS22HB_FIFO_InitStruct member.
+/// @param  fifo: Enable FIFO or not.
+/// @param  mode: specifies the FIFO modes.
+///     This parameter can be one of the following values:
+/// @arg  LPS22HB_FIFO_MODE_BYPASS : Bypass mode.
+/// @arg  LPS22HB_FIFO_MODE_FIFO : FIFO mode.
+/// @arg  LPS22HB_FIFO_MODE_STREAM : Stream mode.
+/// @arg  LPS22HB_FIFO_MODE_STREAM_2_FIFO : Stream-to-FIFO mode.
+/// @arg  LPS22HB_FIFO_MODE_BYPASS_2_STREAM : Bypass-to-Stream mode.
+/// @arg  LPS22HB_FIFO_MODE_DYNAMIC_STREAM : Dynamic-Stream mode.
+/// @arg  LPS22HB_FIFO_MODE_BYPASS_2_FIFO : Bypass-to-FIFO mode.
+/// @param  fth: Enable watermark level use or not.
+/// @param  watermark: Watermark level < 32.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
+void LPS22HB_FIFO_Configure(bool fifo, LPS22HB_FIFO_Mode_Typedef mode, bool fth, u8 watermark)
 {
-    LPS22HB_FIFO_InitStruct.fifo_en = ENABLE;
+    LPS22HB_FIFO_InitStruct.fifo_en = fifo;
     LPS22HB_FIFO_InitStruct.fifo_mode = mode;
     LPS22HB_FIFO_InitStruct.stop_on_fth = fth;
     LPS22HB_FIFO_InitStruct.watermark = watermark <= 0x1F ? watermark : 0x1F;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// @brief  Set FIFO mode and watermark level.
+/// @brief  Initial FIFO mode and configuration.
 /// @param  I2Cn: where n can be 1 or 2 to select the I2C peripheral.
-/// @param  fifoMode: specifies the fifo modes.
-///   This parameter can be one of the following values:
-/// @arg  LPS22HB_FIFO_MODE_BYPASS : 
-/// @arg  LPS22HB_FIFO_MODE_FIFO : 
-/// @arg  LPS22HB_FIFO_MODE_CONTINUOUS : 
-/// @arg  LPS22HB_FIFO_MODE_BYPASS_2_FIFO : 
-/// @arg  LPS22HB_FIFO_MODE_BYPASS_2_CONTINUOUS : 
-/// @arg  LPS22HB_FIFO_MODE_CONTINUOUS_2_FIFO : 
-/// @param  wtm: Enable the use of the FIFO watermark level.
-///   This parameter can be: ENABLE or DISABLE.
-/// @param  watermark: FIFO watermark level.
 /// @retval The state of whether error happened when I2C operates HPS22HH.
 ////////////////////////////////////////////////////////////////////////////////
 LPS22HB_Error_Typedef LPS22HB_FIFO_Init(I2C_TypeDef *I2Cx)
@@ -113,6 +117,7 @@ LPS22HB_Error_Typedef LPS22HB_FIFO_Init(I2C_TypeDef *I2Cx)
     uint8_t tmp = 0x00;
     if(LPS22HB_Reg_Read(I2Cx, LPS22HB_CTRL_REG2, &tmp, 1))
         return LPS22HB_ERROR;
+    // Configure LPS22HB with LPS22HB_FIFO_InitStruct
     tmp |= LPS22HB_CR2_FIFO_EN | LPS22HB_FIFO_InitStruct.stop_on_fth << LPS22HB_CR2_STOP_ON_FTH_POS;
     if(LPS22HB_Reg_Write(I2Cx, LPS22HB_CTRL_REG2, &tmp, 1))
         return LPS22HB_ERROR;
@@ -158,14 +163,39 @@ LPS22HB_Error_Typedef LPS22HB_FIFO_Restart(I2C_TypeDef *I2Cx)
 ///   This parameter can be: ENABLE or DISABLE.
 /// @retval The state of whether error happened when I2C operates HPS22HH.
 ////////////////////////////////////////////////////////////////////////////////
-LPS22HB_Error_Typedef LPS22HB_Interrupt_Enable(I2C_TypeDef *I2Cx, u8 it, u8 mode, u8 *THS_P)
+LPS22HB_Error_Typedef LPS22HB_Interrupt_Enable(I2C_TypeDef *I2Cx, LPS22HB_IT_Mode_Typedef it, u8 *THS_P)
 {
     u8 buffer;
-    buffer = it | LPS22HB_ITC_DIFF_EN | LPS22HB_ITC_LIR | mode;
+    buffer = LPS22HB_ITC_DIFF_EN | LPS22HB_ITC_LIR | it;
     if(LPS22HB_Reg_Write(I2Cx, LPS22HB_INTERRUPT_CFG, &buffer, 1))
         return LPS22HB_ERROR;
 
     if(LPS22HB_Reg_Write(I2Cx, LPS22HB_THS_P_L, THS_P, 2))
+        return LPS22HB_ERROR;
+
+    return LPS22HB_OK;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+LPS22HB_Error_Typedef LPS22HB_DRDY_PIN_Configure(I2C_TypeDef *I2Cx, u8 int_s, u8 data_sig)
+{
+    u8 buffer;
+    buffer = int_s | data_sig;
+    if(LPS22HB_Reg_Write(I2Cx, LPS22HB_CTRL_REG3, &buffer, 1))
+        return LPS22HB_ERROR;
+
+    return LPS22HB_OK;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+LPS22HB_Error_Typedef LPS22HB_AUTO_Configure(I2C_TypeDef *I2Cx, LPS22HB_AUTO_Mode_Typedef autoMode)
+{
+    uint8_t tmp;
+    if(LPS22HB_Reg_Read(I2Cx, LPS22HB_INTERRUPT_CFG, &tmp, 1))
+        return LPS22HB_ERROR;
+
+    tmp |= autoMode;
+    if(LPS22HB_Reg_Write(I2Cx, LPS22HB_INTERRUPT_CFG, &tmp, 1))
         return LPS22HB_ERROR;
 
     return LPS22HB_OK;
@@ -185,6 +215,14 @@ FlagStatus LPS22HB_INT_SOURCE_Get(I2C_TypeDef *I2Cx, u8 flag)
 {
     u8 buffer = 0;
     LPS22HB_Reg_Read(I2Cx, LPS22HB_INT_SOURCE, &buffer, 1);
+    if(buffer & flag){
+        switch(flag){
+            case LPS22HB_ITS_PH_FLAG: printf("pressure high interrupt generate \n"); break;
+            case LPS22HB_ITS_PL_FLAG: printf("pressure low interrupt generate \n"); break;
+            case LPS22HB_ITS_IA_FLAG: printf("at least one interrupt generate \n"); break;
+        }
+    }
+
     return ((buffer & flag) ? SET : RESET);
 }
 
@@ -240,8 +278,8 @@ LPS22HB_Error_Typedef LPS22HB_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t
 LPS22HB_Error_Typedef LPS22HB_FIFO_Rolling_Get(I2C_TypeDef *I2Cx, int32_t *p_value, int16_t *t_value)
 {
     if(LPS22HB_FIFO_InitStruct.fifo_en){
-        uint8_t buffer[160];
         u16 number = LPS22HB_FIFO_InitStruct.stop_on_fth ? (LPS22HB_FIFO_InitStruct.watermark + 1) * 5 : 160;
+        uint8_t buffer[160];
         if(LPS22HB_Reg_Read(I2Cx, LPS22HB_PRESS_OUT_XL, buffer, number))
             return LPS22HB_ERROR;
 
@@ -267,35 +305,6 @@ LPS22HB_Error_Typedef LPS22HB_FIFO_Rolling_Get(I2C_TypeDef *I2Cx, int32_t *p_val
 
     return LPS22HB_OK;
 }
-
-// //////////////////////////////////////////////////////////////////////////////
-// LPS22HB_Error_Typedef LPS22HB_FIFO_Rolling_Get(I2C_TypeDef *I2Cx, int32_t *p_value, int16_t *t_value)
-// {
-//     uint8_t buffer[160];
-//     if(LPS22HB_Reg_Read(I2Cx, LPS22HB_PRESS_OUT_XL, buffer, 160))
-//         return LPS22HB_ERROR;
-
-//     uint8_t data[5] = {0, 0, 0, 0, 0};
-//     for(int i = 0; i < 160; i++){
-//         switch(i % 5){
-//             case 0: data[0] = buffer[i]; break;
-//             case 1: data[1] = buffer[i]; break;
-//             case 2: data[2] = buffer[i]; break;
-//             case 3: data[3] = buffer[i]; break;
-//             case 4: {
-//                 data[4] = buffer[i];
-//                 *p_value = ((data[2] << 16) | (data[1] << 8) | data[0]) * 10 / 4096;
-//                 *t_value = ((data[4] << 8) | data[3]) / 10;
-//                 printf("Get Pressure value : %d.%d hPa \n", *p_value / 10, abs(*p_value % 10));
-//                 printf("Get Temperature value : %d.%d C \n", *t_value / 10, abs(*t_value % 10));
-//                 break;
-//             }
-//             default:break;
-//         }
-//     }
-
-//     return LPS22HB_OK;
-// }
 
 //////////////////////////////////////////////////////////////////////////////
 LPS22HB_Error_Typedef LPS22HB_Calculation(I2C_TypeDef *I2Cx, int32_t *p_value, int16_t *t_value, bool oneshot)

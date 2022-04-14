@@ -24,7 +24,14 @@
 
 // Files includes  -------------------------------------------------------------
 
-
+// u8 I2CSlaveAddr[5] = {0, 0, 0, 0, 0};
+// u8 cnt = 0;
+// typedef struct
+// {
+//     bool    LPS22HB;
+//     bool    HTS221;
+// } I2C_Device_State_Typedef;
+// I2C_Device_State_Typedef I2C_Device_State;
 ////////////////////////////////////////////////////////////////////////////////
 /// @addtogroup MM32_Example_Layer
 /// @{

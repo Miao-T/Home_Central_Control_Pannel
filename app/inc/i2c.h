@@ -3,17 +3,12 @@
 #define __I2C_H_
 ////////////////////////////////////////////////////////////////////////////////
 
-typedef enum {
-    SLAVE_FOUND     = (uint8_t)0,
-    SLAVE_NONE      = !SLAVE_FOUND
-} I2C_SlaveScan_Typedef;
-
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef _I2C_C_
 #define GLOBAL
 
-u8 i2cTx[] = {0x84,0x02,0x00,0x00,0x00,0x00,0x00,0x00};
-u8 i2cRx[] = {0,0,0,0,0,0,0,0};
+// u8 i2cTx[] = {0x84,0x02,0x00,0x00,0x00,0x00,0x00,0x00};
+// u8 i2cRx[] = {0,0,0,0,0,0,0,0};
 
 
 #else
@@ -37,7 +32,7 @@ void Sensor_ReadBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt);
 void Sensor_WriteBuffer(I2C_TypeDef *I2Cx, u8* ptr, u16 cnt);
 void Sensor_Read(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt);
 void Sensor_Write(I2C_TypeDef *I2Cx, u8 addr, u8 subAddr, u8* ptr, u16 cnt);
-I2C_SlaveScan_Typedef Scan_All_Addr(I2C_TypeDef *I2Cx, u8 *ptr);
+void Scan_All_Addr(I2C_TypeDef *I2Cx, u8 *ptr, u8 cnt);
 
 ////////////////////////////////////////////////////////////////////////////////
 #endif

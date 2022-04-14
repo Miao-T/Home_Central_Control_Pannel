@@ -84,15 +84,16 @@ int main(void)
     MCUID = SetSystemClock(emSYSTICK_On, AppTaskTick);
 
     initPeri();
-    // u8 ptr[4] = {0, 0, 0, 0};
-    // if(Scan_All_Addr(I2C2, ptr)){
-    //     printf("Sorry, No I2C Slave Device is connected");
-    // }
+    // Scan_All_Addr(I2C2, I2CSlaveAddr, cnt));
 
     /*                  LPS22HH               */
+    LPS22HB_Reset_Software_BOOT(I2C2);
     LPS22HB_Init(I2C2, DISABLE, LPS22HB_OUTPUT_DATA_RATE_10);
-    LPS22HB_FIFO_Configure(LPS22HB_FIFO_MODE_FIFO, DISABLE, 0x00);
-    LPS22HB_FIFO_Init(I2C2);
+    u8 p_ref_value[2] = {0x10, 0x00};
+    LPS22HB_Interrupt_Enable(I2C2, LPS22HB_IT_PHE, p_ref_value);
+    LPS22HB_AUTO_Configure(I2C2, LPS22HB_AUTORIFP_MODE_EN);
+    // LPS22HB_FIFO_Configure(ENABLE, LPS22HB_FIFO_MODE_FIFO, DISABLE, 0x00);
+    // LPS22HB_FIFO_Init(I2C2);
 
     printf("LPS22HB READY \n");
     // u8 ths_p[2] = {0x01, 0x00};
@@ -101,17 +102,21 @@ int main(void)
     int16_t temperature_lps = 0;
 
     /*                  HTS221               */
-    HTS221_Init(I2C2, DISABLE, HTS221_OUTPUT_DATA_RATE_1);
-    HTS221_Temperature_Calibration_Get(I2C2);
-    HTS221_Humidity_Calibration_Get(I2C2);
-    printf("HTS221 READY \n");
-    int16_t temperature_hts = 0;
-    uint16_t humidity_hts = 0;
+    // HTS221_Init(I2C2, DISABLE, HTS221_OUTPUT_DATA_RATE_1);
+    // HTS221_Temperature_Calibration_Get(I2C2);
+    // HTS221_Humidity_Calibration_Get(I2C2);
+    // printf("HTS221 READY \n");
+    // int16_t temperature_hts = 0;
+    // uint16_t humidity_hts = 0;
 
     while (1) {
         LD1_on();
         // HTS221_Calculation(I2C2, &humidity_hts, &temperature_hts, DISABLE);
         LPS22HB_Calculation(I2C2, &pressure_lps, &temperature_lps, DISABLE);
+        LPS22HB_INT_SOURCE_Get(I2C2, LPS22HB_ITS_PH_FLAG);
+        u8 buffer[5] = {0, 0, 0, 0, 0};
+        Sensor_Read(I2C2, 0xB8, 0x15, buffer, 3);
+        printf("ref is %x%x%x\n", buffer[0], buffer[1], buffer[2]);
 
         // if(LPS22HH_INT_SOURCE_Get(I2C2, LPS22HH_ITS_PH_FLAG)){
         //     printf("high pressure interrupt happened");
