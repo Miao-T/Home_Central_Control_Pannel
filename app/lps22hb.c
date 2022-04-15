@@ -8,10 +8,14 @@
 #include <math.h>
 
 #include "common.h"
+#include "mm32.h"
 #include "HAL_i2c.h"
 #include "lps22hb.h"
 #include "i2c.h"
 #include "uart.h"
+#include "HAL_exti.h"
+#include "HAL_nvic.h"
+#include "HAL_gpio.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 LPS22HB_Error_Typedef LPS22HB_Reg_Write(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt)
@@ -78,6 +82,17 @@ LPS22HB_Error_Typedef LPS22HB_DeInit(I2C_TypeDef *I2Cx)
     u8 buffer[3] = {0, 0, 0};
 
     if(LPS22HB_Reg_Write(I2Cx, LPS22HB_CTRL_REG1, buffer, 3))
+        return LPS22HB_ERROR;
+
+    return LPS22HB_OK;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+LPS22HB_Error_Typedef LPS22HB_DRDY_PIN_DataReady_Configure(I2C_TypeDef *I2Cx)
+{
+    u8 buffer;
+    buffer = LPS22HB_CR3_INT_S_DATA_SIG | LPS22HB_CR3_DRDY;
+    if(LPS22HB_Reg_Write(I2Cx, LPS22HB_CTRL_REG3, &buffer, 1))
         return LPS22HB_ERROR;
 
     return LPS22HB_OK;
@@ -177,10 +192,10 @@ LPS22HB_Error_Typedef LPS22HB_Interrupt_Enable(I2C_TypeDef *I2Cx, LPS22HB_IT_Mod
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-LPS22HB_Error_Typedef LPS22HB_DRDY_PIN_Configure(I2C_TypeDef *I2Cx, u8 int_s, u8 data_sig)
+LPS22HB_Error_Typedef LPS22HB_DRDY_PIN_Interrupt_Configure(I2C_TypeDef *I2Cx, LPS22HB_IT_Mode_Typedef int_s)
 {
     u8 buffer;
-    buffer = int_s | data_sig;
+    buffer = int_s <<  LPS22HB_CR3_INT_S_POS;
     if(LPS22HB_Reg_Write(I2Cx, LPS22HB_CTRL_REG3, &buffer, 1))
         return LPS22HB_ERROR;
 
@@ -351,10 +366,70 @@ LPS22HB_Error_Typedef LPS22HB_Calculation(I2C_TypeDef *I2Cx, int32_t *p_value, i
     }
 }
 
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 void LPS22HB_Altitude_Calculation(int32_t *p_value)
 {
     float altitude = 44300 * (1 - pow(*p_value / 10132.5, 0.19));
     printf("Get Altitude value : %.1f M \n", altitude);
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void LPS22HB_initGPIO_DRDY_Pin()
+{
+    // INT_DRDY pin in LPS22HB sensor connect to PE2 in MB-039
+    GPIO_InitTypeDef GPIO_InitStruct;
+
+    COMMON_EnableIpClock(emCLOCK_GPIOE);
+
+    GPIO_InitStruct.GPIO_Pin  = GPIO_Pin_2;
+    GPIO_InitStruct.GPIO_Speed = GPIO_Speed_50MHz;
+    GPIO_InitStruct.GPIO_Mode = GPIO_Mode_IPD;
+    GPIO_Init(GPIOE, &GPIO_InitStruct);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void LPS22HB_EXTI_GPIO_DRDY_Pin()
+{
+    EXTI_InitTypeDef EXTI_InitStruct;
+
+    COMMON_EnableIpClock(emCLOCK_EXTI);
+
+    EXTI_LineConfig(EXTI_PortSourceGPIOE, EXTI_PinSource2);
+    EXTI_InitStruct.EXTI_Line = EXTI_Line2;
+    EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+    EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
+    EXTI_InitStruct.EXTI_LineCmd = ENABLE;
+    EXTI_Init(&EXTI_InitStruct);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void LPS22HB_NVIC_GPIO_DRDY_Pin()
+{
+    NVIC_InitTypeDef NVIC_InitStructure;
+
+    NVIC_InitStructure.NVIC_IRQChannel = EXTI2_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x00;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void LPS22HB_GPIO_EXTI_Init()
+{
+    LPS22HB_initGPIO_DRDY_Pin();
+    LPS22HB_NVIC_GPIO_DRDY_Pin();
+    LPS22HB_EXTI_GPIO_DRDY_Pin();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void EXTI2_IRQHandler()
+{
+    u16 exti_delay = 0;
+    for(exti_delay = 0; exti_delay < 1000; exti_delay++);
+    if(EXTI_GetITStatus(EXTI_Line2)){
+        printf("DRDY PIN High!!!");
+    }
+    EXTI_ClearITPendingBit(EXTI_Line2);
 }

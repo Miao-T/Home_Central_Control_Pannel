@@ -42,6 +42,8 @@ HTS221_Error_Typedef HTS221_Reset_BOOT(I2C_TypeDef *I2Cx)
     u8 resetValue = HTS221_CR2_BOOT;
     if(HTS221_Reg_Write(I2Cx, HTS221_CTRL_REG2, &resetValue, 1))
          return HTS221_ERROR;
+
+    return HTS221_OK;
 }
 
 //////////////////////////////////////////////////////////////////////////////

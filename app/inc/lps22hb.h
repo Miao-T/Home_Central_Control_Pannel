@@ -31,6 +31,7 @@ typedef enum {
 } LPS22HB_AUTO_Mode_Typedef;
 
 typedef enum {
+    LPS22HB_DATA_SIG                       = 0x00,
     LPS22HB_IT_PHE                         = 0x01,
     LPS22HB_IT_PLE                         = 0x02,
     LPS22HB_IT_PHE_PLE                     = 0x03
@@ -222,11 +223,12 @@ u8 LPS22HB_WHO_AM_I_Get(I2C_TypeDef *I2Cx);
 LPS22HB_Error_Typedef LPS22HB_Reset_Software_BOOT(I2C_TypeDef *I2Cx);
 LPS22HB_Error_Typedef LPS22HB_Init(I2C_TypeDef *I2Cx, bool oneshot, u8 frequency);
 LPS22HB_Error_Typedef LPS22HB_DeInit(I2C_TypeDef *I2Cx);
+LPS22HB_Error_Typedef LPS22HB_DRDY_PIN_DataReady_Configure(I2C_TypeDef *I2Cx);
 void LPS22HB_FIFO_Configure(bool fifo, LPS22HB_FIFO_Mode_Typedef mode, bool fth, u8 watermark);
 LPS22HB_Error_Typedef LPS22HB_FIFO_Init(I2C_TypeDef *I2Cx);
 LPS22HB_Error_Typedef LPS22HB_FIFO_Restart(I2C_TypeDef *I2Cx);
 LPS22HB_Error_Typedef LPS22HB_Interrupt_Enable(I2C_TypeDef *I2Cx, LPS22HB_IT_Mode_Typedef it, u8 *THS_P);
-LPS22HB_Error_Typedef LPS22HB_DRDY_PIN_Configure(I2C_TypeDef *I2Cx, u8 int_s, u8 data_sig);
+LPS22HB_Error_Typedef LPS22HB_DRDY_PIN_Interrupt_Configure(I2C_TypeDef *I2Cx, LPS22HB_IT_Mode_Typedef int_s);
 LPS22HB_Error_Typedef LPS22HB_AUTO_Configure(I2C_TypeDef *I2Cx, LPS22HB_AUTO_Mode_Typedef autoMode);
 FlagStatus LPS22HB_INT_SOURCE_Get(I2C_TypeDef *I2Cx, u8 flag);
 LPS22HB_Error_Typedef LPS22HB_PRESS_OUT_Get(I2C_TypeDef *I2Cx, int32_t *P_OUT);
@@ -236,6 +238,11 @@ LPS22HB_Error_Typedef LPS22HB_Temperature_Calculation(I2C_TypeDef *I2Cx, int16_t
 LPS22HB_Error_Typedef LPS22HB_FIFO_Rolling_Get(I2C_TypeDef *I2Cx, int32_t *p_value, int16_t *t_value);
 LPS22HB_Error_Typedef LPS22HB_Calculation(I2C_TypeDef *I2Cx, int32_t *p_value, int16_t *t_value, bool oneshot);
 void LPS22HB_Altitude_Calculation(int32_t *p_value);
+
+void LPS22HB_initGPIO_DRDY_Pin();
+void LPS22HB_EXTI_GPIO_DRDY_Pin();
+void LPS22HB_NVIC_GPIO_DRDY_Pin();
+void LPS22HB_GPIO_EXTI_Init();
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

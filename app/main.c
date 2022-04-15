@@ -89,9 +89,14 @@ int main(void)
     /*                  LPS22HH               */
     LPS22HB_Reset_Software_BOOT(I2C2);
     LPS22HB_Init(I2C2, DISABLE, LPS22HB_OUTPUT_DATA_RATE_10);
+    // u8 tmp = 0x11;
+    // Sensor_Write(I2C2, 0xB8, 0x11, &tmp, 1);
+    /*                  Interrupt             */
+    // LPS22HB_Interrupt_DRDY_PIN_Configure(I2C2, LPS22HB_IT_PHE);
     u8 p_ref_value[2] = {0x10, 0x00};
     LPS22HB_Interrupt_Enable(I2C2, LPS22HB_IT_PHE, p_ref_value);
     LPS22HB_AUTO_Configure(I2C2, LPS22HB_AUTORIFP_MODE_EN);
+    /*                  FIFO                  */
     // LPS22HB_FIFO_Configure(ENABLE, LPS22HB_FIFO_MODE_FIFO, DISABLE, 0x00);
     // LPS22HB_FIFO_Init(I2C2);
 
@@ -123,6 +128,8 @@ int main(void)
         // }
     }
 }
+
+
 
 /// @}
 
