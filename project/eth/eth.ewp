@@ -977,6 +977,9 @@
   <group>
     <name>app</name>
     <file>
+      <name>$PROJ_DIR$\..\..\app\esp8266.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\..\app\hts221.c</name>
     </file>
     <file>

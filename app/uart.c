@@ -45,17 +45,15 @@
 #endif
 PUTCHAR_PROTOTYPE
 {
-    static uint32_t aaa = 0;
-
-    aaa = UART1->CSR;
-
-    while ((aaa & UART_CSR_TXC) == 0) {
-        aaa = UART1->CSR;
-    }
-    UART1->TDR = ch & 0x00FF;
+    UART_SendData(UART1, (uint8_t)ch);
+    while (UART_GetFlagStatus(UART1, UART_CSR_TXC) == RESET);
     return ch;
 }
 
+#define BUFFERSIZE  10
+char newTxBuffer[BUFFERSIZE];
+char newRxBuffer[BUFFERSIZE];
+u16 gSendLen;
 ////////////////////////////////////////////////////////////////////////////////
 void initGPIO_UART(UART_TypeDef *UARTx)
 {
@@ -152,36 +150,75 @@ void NVIC_UART(UART_TypeDef *UARTx)
     }
 }
 
-// ////////////////////////////////////////////////////////////////////////////////
-// void UART1_IRQHandler(void)
-// {
-//     if (UART_GetITStatus(UART1, UART_IER_RX) != RESET) {
-//         UART_ClearITPendingBit(UART1, UART_IER_RX);
-//         memmove(&uart1RxBuf[0], &uart1RxBuf[1], 7);
-//         uart1RxBuf[7] = UART_ReceiveData(UART1);
-//         rf.uart1 = true;
-//         error.uart1 = false;
-//         rfOverCnt.uart1 = 0;
-//     }
-// }
+////////////////////////////////////////////////////////////////////////////////
+void UART1_IRQHandler(void)
+{
+    if(UART_GetITStatus(UART1, UART_ISR_TX) != RESET){
+        UART_ClearITPendingBit(UART1, UART_ISR_TX);
+        UART_ITConfig(UART1, UART_IER_TX, DISABLE);
+        static u16 tCnt = 0;
+        if (++ tCnt < gSendLen){
+            UART_ITConfig(UART1, UART_IER_TX, ENABLE);
+            UART_SendData(UART1, *(newTxBuffer + tCnt));
+        }else{
+            // txSuccess = true;
+            tCnt = 0;
+        }
+    }
+    if(UART_GetITStatus(UART1, UART_ISR_RX) != RESET) {
+        UART_ClearITPendingBit(UART1, UART_ISR_RX);
+        static u16 rCnt = 0;
+        *(newRxBuffer + rCnt) = UART_ReceiveData(UART1);
+        rCnt++;
+        if (rCnt >= BUFFERSIZE){
+            // rxSuccess = true;
+            rCnt = 0;
+        }
+    }
+}
 
-// ////////////////////////////////////////////////////////////////////////////////
-// void UART8_IRQHandler(void)
-// {
-//     if (UART_GetITStatus(UART8, UART_IER_RX) != RESET) {
-//         UART_ClearITPendingBit(UART8, UART_IER_RX);
-//         memmove(&uart2RxBuf[0], &uart2RxBuf[1], 7);
-//         uart2RxBuf[7] = UART_ReceiveData(UART8);
-//         rf.uart2 = true;
-//         error.uart2 = false;
-//         rfOverCnt.uart2 = 0;
-//     }
-// }
+////////////////////////////////////////////////////////////////////////////////
+void UART8_IRQHandler(void)
+{
+    if(UART_GetITStatus(UART8, UART_ISR_TX) != RESET){
+        UART_ClearITPendingBit(UART8, UART_ISR_TX);
+        UART_ITConfig(UART8, UART_IER_TX, DISABLE);
+        static u16 tCnt = 0;
+        if (++ tCnt < gSendLen){
+            UART_ITConfig(UART8, UART_IER_TX, ENABLE);
+            UART_SendData(UART8, *(newTxBuffer + tCnt));
+        }else{
+            // txSuccess = true;
+            tCnt = 0;
+        }
+    }
+    if(UART_GetITStatus(UART8, UART_ISR_RX) != RESET) {
+        UART_ClearITPendingBit(UART8, UART_ISR_RX);
+        static u16 rCnt = 0;
+        *(newRxBuffer + rCnt) = UART_ReceiveData(UART8);
+        rCnt++;
+        if (rCnt >= BUFFERSIZE){
+            // rxSuccess = true;
+            rCnt = 0;
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void UART_SendPackage(UART_TypeDef *UARTx, u8* ptr, u16 len)
+{
+    gSendLen = len;
+    UART_SendData(UART1, *(u16*)ptr);
+    UART_ITConfig(UART1, UART_IER_TX, ENABLE);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 void BSP_UART_Configure()
 {
     initGPIO_UART(UART1);
     initUART(UART1, 115200);
-    NVIC_UART(UART1);
+    // NVIC_UART(UART1);
+    initGPIO_UART(UART8);
+    initUART(UART8, 115200);
+    NVIC_UART(UART8);
 }

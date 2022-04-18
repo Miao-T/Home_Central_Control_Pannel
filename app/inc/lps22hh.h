@@ -222,15 +222,6 @@ typedef enum {
 #define LPS22HH_STATUS_T_OR_POS         (5)
 #define LPS22HH_STATUS_T_OR             (1 << LPS22HH_STATUS_T_OR_POS)
 
-// typedef struct
-// {
-//     u8 p_da;
-//     u8 t_da;
-//     u8 p_or;
-//     u8 t_or;
-// } LPS22HH_STATUS_Typedef;
-// LPS22HH_STATUS_Typedef LPS22HH_STATUS_Initstruct;
-
 #endif
 LPS22HH_Error_Typedef LPS22HH_Reg_Write(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
 LPS22HH_Error_Typedef LPS22HH_Reg_Read(I2C_TypeDef *I2Cx, u8 regAddr, u8* ptr, u16 cnt);
