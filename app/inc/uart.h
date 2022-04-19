@@ -11,11 +11,9 @@
 #define GLOBAL extern
 #endif
 
-// GLOBAL u8 uartTx1;
-// GLOBAL u8 uartTx2;
-
-// GLOBAL u8 uart1RxBuf[8];
-// GLOBAL u8 uart2RxBuf[8];
+#define BUFFERSIZE  100
+GLOBAL char txBuffer[BUFFERSIZE];
+GLOBAL char rxBuffer[BUFFERSIZE];
 
 // GLOBAL u8 uartSel;
 

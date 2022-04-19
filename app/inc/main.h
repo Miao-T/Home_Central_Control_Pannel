@@ -23,7 +23,6 @@
 #define __MAIN_H
 
 // Files includes  -------------------------------------------------------------
-
 // u8 I2CSlaveAddr[5] = {0, 0, 0, 0, 0};
 // u8 cnt = 0;
 // typedef struct

@@ -23,6 +23,7 @@
 // Includes  -------------------------------------------------------------------
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "mm32_types.h"
 #include "mm32_system.h"
 #include "common.h"
@@ -37,6 +38,7 @@
 #include "i2c.h"
 #include "hts221.h"
 #include "lps22hb.h"
+#include "esp8266.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// @addtogroup MM32_Example_Layer
@@ -84,9 +86,9 @@ int main(void)
     MCUID = SetSystemClock(emSYSTICK_On, AppTaskTick);
 
     initPeri();
-    char* bufferSend = "tangz";
-    char* bufferReceive = "";
-    UART_SendPackage(UART8, (u8*)bufferSend, 5);
+    /*                   UART                 */
+    char *command = "AT";
+    ESP8266_UART_SendCmd(UART8, command);
 
     /*                   I2C                 */
     // Scan_All_Addr(I2C2, I2CSlaveAddr, cnt));

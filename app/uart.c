@@ -50,9 +50,9 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-#define BUFFERSIZE  10
-char newTxBuffer[BUFFERSIZE];
-char newRxBuffer[BUFFERSIZE];
+// #define BUFFERSIZE  10
+// char newTxBuffer[BUFFERSIZE];
+// char newRxBuffer[BUFFERSIZE];
 u16 gSendLen;
 ////////////////////////////////////////////////////////////////////////////////
 void initGPIO_UART(UART_TypeDef *UARTx)
@@ -151,47 +151,8 @@ void NVIC_UART(UART_TypeDef *UARTx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void UART1_IRQHandler(void)
-{
-    if(UART_GetITStatus(UART1, UART_ISR_TX) != RESET){
-        UART_ClearITPendingBit(UART1, UART_ISR_TX);
-        UART_ITConfig(UART1, UART_IER_TX, DISABLE);
-        static u16 tCnt = 0;
-        if (++ tCnt < gSendLen){
-            UART_ITConfig(UART1, UART_IER_TX, ENABLE);
-            UART_SendData(UART1, *(newTxBuffer + tCnt));
-        }else{
-            // txSuccess = true;
-            tCnt = 0;
-        }
-    }
-    if(UART_GetITStatus(UART1, UART_ISR_RX) != RESET) {
-        UART_ClearITPendingBit(UART1, UART_ISR_RX);
-        static u16 rCnt = 0;
-        *(newRxBuffer + rCnt) = UART_ReceiveData(UART1);
-        rCnt++;
-        if (rCnt >= BUFFERSIZE){
-            // rxSuccess = true;
-            rCnt = 0;
-        }
-    }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 void UART8_IRQHandler(void)
 {
-    if(UART_GetITStatus(UART8, UART_ISR_TX) != RESET){
-        UART_ClearITPendingBit(UART8, UART_ISR_TX);
-        UART_ITConfig(UART8, UART_IER_TX, DISABLE);
-        static u16 tCnt = 0;
-        if (++ tCnt < gSendLen){
-            UART_ITConfig(UART8, UART_IER_TX, ENABLE);
-            UART_SendData(UART8, *(newTxBuffer + tCnt));
-        }else{
-            // txSuccess = true;
-            tCnt = 0;
-        }
-    }
     if(UART_GetITStatus(UART8, UART_ISR_RX) != RESET) {
         UART_ClearITPendingBit(UART8, UART_ISR_RX);
         static u16 rCnt = 0;
@@ -207,9 +168,11 @@ void UART8_IRQHandler(void)
 ////////////////////////////////////////////////////////////////////////////////
 void UART_SendPackage(UART_TypeDef *UARTx, u8* ptr, u16 len)
 {
-    gSendLen = len;
-    UART_SendData(UART1, *(u16*)ptr);
-    UART_ITConfig(UART1, UART_IER_TX, ENABLE);
+    while(len--){
+        UART_SendData(UARTx, *(u16*)ptr);
+        ptr++;
+        while (UART_GetFlagStatus(UARTx, UART_CSR_TXC) == RESET);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -217,8 +180,11 @@ void BSP_UART_Configure()
 {
     initGPIO_UART(UART1);
     initUART(UART1, 115200);
-    // NVIC_UART(UART1);
+
     initGPIO_UART(UART8);
     initUART(UART8, 115200);
     NVIC_UART(UART8);
+
+    memset(txBuffer, 0x00, sizeof(txBuffer));
+    memset(rxBuffer, 0x00, sizeof(rxBuffer));
 }
