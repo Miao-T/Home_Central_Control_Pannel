@@ -75,6 +75,34 @@ void AppTaskTick()
     }
 }
 
+int32_t pressure_lps = 0;
+int16_t temperature_lps = 0;
+int16_t temperature_hts = 0;
+uint16_t humidity_hts = 0;
+
+void LPS22HB_Configure()
+{
+    /*                  LPS22HH               */
+    LPS22HB_Init(I2C2, DISABLE, LPS22HB_OUTPUT_DATA_RATE_10);
+    /*                  Interrupt             */
+    u8 p_ref_value[2] = {0x10, 0x00};
+    LPS22HB_Interrupt_Enable(I2C2, LPS22HB_IT_PHE, p_ref_value);
+    LPS22HB_AUTO_Configure(I2C2, LPS22HB_AUTORIFP_MODE_EN);
+    /*                  FIFO                  */
+    LPS22HB_FIFO_Configure(ENABLE, LPS22HB_FIFO_MODE_FIFO, DISABLE, 0x00);
+    LPS22HB_FIFO_Init(I2C2);
+    printf("LPS22HB READY \n");
+}
+
+void HTS221_Configure()
+{
+    /*                  HTS221               */
+    HTS221_Init(I2C2, DISABLE, HTS221_OUTPUT_DATA_RATE_1);
+    HTS221_Temperature_Calibration_Get(I2C2);
+    HTS221_Humidity_Calibration_Get(I2C2);
+    printf("HTS221 READY \n");
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief  main function.
 /// @param  None.
@@ -86,41 +114,22 @@ int main(void)
     MCUID = SetSystemClock(emSYSTICK_On, AppTaskTick);
 
     initPeri();
-    /*                   UART                 */
-    char *command = "AT";
-    ESP8266_UART_SendCmd(UART8, command);
+    /*                   ESP8266                 */
+    // ESP8266_Init(true);
+    // ESP8266_WIFI_Init(STA);
+    // ESP8266_TCP_Init();
+    // ESP8266_Connect_Wifi_STA();
+    ESP8266_Connect_TCP();
+    // ESP8266_Configure_Passthrough(true);
 
     /*                   I2C                 */
     // Scan_All_Addr(I2C2, I2CSlaveAddr, cnt));
-
-    /*                  LPS22HH               */
-    // LPS22HB_Init(I2C2, DISABLE, LPS22HB_OUTPUT_DATA_RATE_10);
-    /*                  Interrupt             */
-    // u8 p_ref_value[2] = {0x10, 0x00};
-    // LPS22HB_Interrupt_Enable(I2C2, LPS22HB_IT_PHE, p_ref_value);
-    // LPS22HB_AUTO_Configure(I2C2, LPS22HB_AUTORIFP_MODE_EN);
-    /*                  FIFO                  */
-    // LPS22HB_FIFO_Configure(ENABLE, LPS22HB_FIFO_MODE_FIFO, DISABLE, 0x00);
-    // LPS22HB_FIFO_Init(I2C2);
-
-    // printf("LPS22HB READY \n");
-    // int32_t pressure_lps = 0;
-    // int16_t temperature_lps = 0;
-
-    /*                  HTS221               */
-    // HTS221_Init(I2C2, DISABLE, HTS221_OUTPUT_DATA_RATE_1);
-    // HTS221_Temperature_Calibration_Get(I2C2);
-    // HTS221_Humidity_Calibration_Get(I2C2);
-    // printf("HTS221 READY \n");
-    // int16_t temperature_hts = 0;
-    // uint16_t humidity_hts = 0;
 
     while (1) {
         LD1_on();
         // HTS221_Calculation(I2C2, &humidity_hts, &temperature_hts, DISABLE);
         // LPS22HB_Calculation(I2C2, &pressure_lps, &temperature_lps, DISABLE);
         // LPS22HB_INT_SOURCE_Get(I2C2, LPS22HB_ITS_PH_FLAG);
-
     }
 }
 

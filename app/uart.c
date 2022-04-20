@@ -156,7 +156,7 @@ void UART8_IRQHandler(void)
     if(UART_GetITStatus(UART8, UART_ISR_RX) != RESET) {
         UART_ClearITPendingBit(UART8, UART_ISR_RX);
         static u16 rCnt = 0;
-        *(newRxBuffer + rCnt) = UART_ReceiveData(UART8);
+        *(rxBuffer + rCnt) = UART_ReceiveData(UART8);
         rCnt++;
         if (rCnt >= BUFFERSIZE){
             // rxSuccess = true;
@@ -185,6 +185,5 @@ void BSP_UART_Configure()
     initUART(UART8, 115200);
     NVIC_UART(UART8);
 
-    memset(txBuffer, 0x00, sizeof(txBuffer));
     memset(rxBuffer, 0x00, sizeof(rxBuffer));
 }
