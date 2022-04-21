@@ -50,9 +50,6 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-// #define BUFFERSIZE  10
-// char newTxBuffer[BUFFERSIZE];
-// char newRxBuffer[BUFFERSIZE];
 u16 gSendLen;
 ////////////////////////////////////////////////////////////////////////////////
 void initGPIO_UART(UART_TypeDef *UARTx)
@@ -156,6 +153,10 @@ void UART8_IRQHandler(void)
     if(UART_GetITStatus(UART8, UART_ISR_RX) != RESET) {
         UART_ClearITPendingBit(UART8, UART_ISR_RX);
         static u16 rCnt = 0;
+        if(stringStart){
+            rCnt = 0;
+            stringStart = 0;
+        }
         *(rxBuffer + rCnt) = UART_ReceiveData(UART8);
         rCnt++;
         if (rCnt >= BUFFERSIZE){

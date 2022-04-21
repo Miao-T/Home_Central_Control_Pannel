@@ -103,6 +103,14 @@ void HTS221_Configure()
     printf("HTS221 READY \n");
 }
 
+void delay1(unsigned long time )
+ {
+ 	int i;
+	int j;
+ 	for( i = 0;i<100;i++)
+		for( j = 0;j<time;j++);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief  main function.
 /// @param  None.
@@ -114,19 +122,31 @@ int main(void)
     MCUID = SetSystemClock(emSYSTICK_On, AppTaskTick);
 
     initPeri();
-    /*                   ESP8266                 */
-    // ESP8266_Init(true);
-    // ESP8266_WIFI_Init(STA);
-    // ESP8266_TCP_Init();
-    // ESP8266_Connect_Wifi_STA();
-    ESP8266_Connect_TCP();
-    // ESP8266_Configure_Passthrough(true);
 
+    /*                   ESP8266                 */
+    ESP8266_Init(true);
+    ESP8266_Connect_Wifi_STA();
+    ESP8266_Connect_TCP();
+
+    // UART_SendPackage(UART8, "AT+RST\r\n",strlen("AT+RST\r\n"));
+    // delay1(2000);
+    // UART_SendPackage(UART8, "AT+CWMODE=1\r\n",strlen("AT+CWMODE=1\r\n"));
+    // delay1(2000);
+    // UART_SendPackage(UART8, "AT+CWJAP=\"MMNJ\",\"MMNJ2017\"\r\n",strlen("AT+CWJAP=\"MMNJ\",\"MMNJ2017\"\r\n"));
+    // delay1(8000);
+    // UART_SendPackage(UART8, "AT+CIPSTART=\"TCP\",\"10.3.1.120\",5555\r\n",strlen("AT+CIPSTART=\"TCP\",\"10.3.1.120\",5555\r\n"));
+    // delay1(8000);
+    // UART_SendPackage(UART8, "AT+CIPMODE=1\r\n",strlen("AT+CIPMODE=1\r\n"));
+    // delay1(2000);
+    // UART_SendPackage(UART8, "AT+CIPSEND\r\n",strlen("AT+CIPSEND\r\n"));
+    // delay1(2000);
+    // UART_SendPackage(UART8, "123",strlen("123"));
     /*                   I2C                 */
     // Scan_All_Addr(I2C2, I2CSlaveAddr, cnt));
 
     while (1) {
         LD1_on();
+
         // HTS221_Calculation(I2C2, &humidity_hts, &temperature_hts, DISABLE);
         // LPS22HB_Calculation(I2C2, &pressure_lps, &temperature_lps, DISABLE);
         // LPS22HB_INT_SOURCE_Get(I2C2, LPS22HB_ITS_PH_FLAG);

@@ -50,7 +50,7 @@ typedef enum {
 #define ESP8266_TCP_IPADDR_2            1
 #define ESP8266_TCP_IPADDR_3            120
 
-#define ESP8266_TCP_PORT                5050
+#define ESP8266_TCP_PORT                5555
 
 #define STR1(R)  #R
 #define STR2(R)  STR1(R)
@@ -64,11 +64,36 @@ typedef struct
     ESP8266_STA_Scan_Mode_Typedef   scanMode;
 } ESP8266_STA_Typedef;
 
+typedef struct 
+{
+    uint8_t                         staIPAddr0;
+    uint8_t                         staIPAddr1;
+    uint8_t                         staIPAddr2;
+    uint8_t                         staIPAddr3;
+} ESP8266_Device_IPADDR_Typedef;
+
+typedef struct 
+{
+    uint8_t                         staMAC0;
+    uint8_t                         staMAC1;
+    uint8_t                         staMAC2;
+    uint8_t                         staMAC3;
+    uint8_t                         staMAC4;
+    uint8_t                         staMAC5;
+} ESP8266_Device_IPMAC_Typedef;
+
+typedef struct 
+{
+    ESP8266_Device_IPADDR_Typedef   staIP;
+    ESP8266_Device_IPMAC_Typedef    staMAC;
+} ESP8266_Device_IP_Typedef;
+
 typedef struct
 {
     ESP8266_Mode_Typedef            mode;
     ESP8266_Wifi_Status_Typedef     status;
     ESP8266_STA_Typedef             staPara;
+    ESP8266_Device_IP_Typedef       deviceIP;
 } ESP8266_WIFI_Typedef;
 ESP8266_WIFI_Typedef ESP8266_WIFI_InitStruct;
 
@@ -84,7 +109,7 @@ typedef struct
 {
     ESP8266_WIFI_Typedef            wifiPara;
     ESP8266_IPADDR_Typedef          ipAddr;
-    uint8_t                         port;
+    uint32_t                        port;
     ESP8266_TCP_Status_Typedef      tcpStatus;
     bool                            passthrough;
 } ESP8266_TCP_Typedef;
@@ -97,6 +122,8 @@ char* stringJoint(char *cmd1, char *cmd2);
 char* stringCommaJoint(char *cmd);
 char* stringQutJoint(char *cmd);
 char* stringEndJoint(char *cmd);
+int charLocation(char *subject, char targetChar, int targetNum);
+char* charExtract(char *subject, int start, int end);
 void ESP8266_UART_SendCmd(char *cmd);
 ESP8266_Error_Typedef ESP8266_UART_Send_AT_Command(char *cmd, char *ack, u32 waitTime);
 ESP8266_Error_Typedef ESP8266_Init(bool rstEn);
@@ -105,6 +132,7 @@ ESP8266_Error_Typedef ESP8266_Connect_Wifi_STA();
 void ESP8266_TCP_Init();
 ESP8266_Error_Typedef ESP8266_Connect_TCP();
 ESP8266_Error_Typedef ESP8266_Configure_Passthrough(bool cipmode);
+ESP8266_Error_Typedef ESP8266_TCP_Communication();
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

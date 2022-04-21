@@ -11,11 +11,9 @@
 #define GLOBAL extern
 #endif
 
-#define BUFFERSIZE  1024
+#define BUFFERSIZE  516
 GLOBAL char rxBuffer[BUFFERSIZE];
-
-// GLOBAL u8 uartSel;
-
+GLOBAL bool stringStart;
 
 #undef GLOBAL
 ////////////////////////////////////////////////////////////////////////////////
