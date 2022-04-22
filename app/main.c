@@ -103,14 +103,6 @@ void HTS221_Configure()
     printf("HTS221 READY \n");
 }
 
-void delay1(unsigned long time )
- {
- 	int i;
-	int j;
- 	for( i = 0;i<100;i++)
-		for( j = 0;j<time;j++);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 /// @brief  main function.
 /// @param  None.
@@ -124,31 +116,31 @@ int main(void)
     initPeri();
 
     /*                   ESP8266                 */
-    ESP8266_Init(false);
+    ESP8266_Init();
     ESP8266_Connect_Wifi_STA();
     ESP8266_Connect_TCP();
     ESP8266_TCP_Communication_Start();
     ESP8266_TCP_SendData("Congratulation!");
 
     // UART_SendPackage(UART8, "AT\r\n",strlen("AT\r\n"));
-    // delay1(5000);
+    // delay(5000);
     // // while(strstr(rxBuffer, "OK") == NULL);
     // // memset(rxBuffer, 0, sizeof(rxBuffer));
     // UART_SendPackage(UART8, "AT+CWMODE=1\r\n",strlen("AT+CWMODE=1\r\n"));
-    // delay1(5000);
+    // delay(5000);
     // // while(strstr(rxBuffer, "OK") == NULL);
     // memset(rxBuffer, 0, sizeof(rxBuffer));
     // stringStart = 1;
     // UART_SendPackage(UART8, "AT+CWJAP=\"MMNJ\",\"MMNJ2017\"\r\n",strlen("AT+CWJAP=\"MMNJ\",\"MMNJ2017\"\r\n"));
     // while(strstr(rxBuffer, "OK") == NULL);
-    // delay1(5000);
+    // delay(5000);
     // // memset(rxBuffer, 0, sizeof(rxBuffer));
     // UART_SendPackage(UART8, "AT+CIPSTART=\"TCP\",\"10.3.1.120\",5555\r\n",strlen("AT+CIPSTART=\"TCP\",\"10.3.1.120\",5555\r\n"));
-    // delay1(8000);
+    // delay(8000);
     // UART_SendPackage(UART8, "AT+CIPMODE=1\r\n",strlen("AT+CIPMODE=1\r\n"));
-    // delay1(2000);
+    // delay(2000);
     // UART_SendPackage(UART8, "AT+CIPSEND\r\n",strlen("AT+CIPSEND\r\n"));
-    // delay1(2000);
+    // delay(2000);
     // UART_SendPackage(UART8, "123",strlen("123"));
     /*                   I2C                 */
     // Scan_All_Addr(I2C2, I2CSlaveAddr, cnt));
