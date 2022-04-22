@@ -124,16 +124,25 @@ int main(void)
     initPeri();
 
     /*                   ESP8266                 */
-    ESP8266_Init(true);
+    ESP8266_Init(false);
     ESP8266_Connect_Wifi_STA();
     ESP8266_Connect_TCP();
+    ESP8266_TCP_Communication_Start();
+    ESP8266_TCP_SendData("Congratulation!");
 
-    // UART_SendPackage(UART8, "AT+RST\r\n",strlen("AT+RST\r\n"));
-    // delay1(2000);
+    // UART_SendPackage(UART8, "AT\r\n",strlen("AT\r\n"));
+    // delay1(5000);
+    // // while(strstr(rxBuffer, "OK") == NULL);
+    // // memset(rxBuffer, 0, sizeof(rxBuffer));
     // UART_SendPackage(UART8, "AT+CWMODE=1\r\n",strlen("AT+CWMODE=1\r\n"));
-    // delay1(2000);
+    // delay1(5000);
+    // // while(strstr(rxBuffer, "OK") == NULL);
+    // memset(rxBuffer, 0, sizeof(rxBuffer));
+    // stringStart = 1;
     // UART_SendPackage(UART8, "AT+CWJAP=\"MMNJ\",\"MMNJ2017\"\r\n",strlen("AT+CWJAP=\"MMNJ\",\"MMNJ2017\"\r\n"));
-    // delay1(8000);
+    // while(strstr(rxBuffer, "OK") == NULL);
+    // delay1(5000);
+    // // memset(rxBuffer, 0, sizeof(rxBuffer));
     // UART_SendPackage(UART8, "AT+CIPSTART=\"TCP\",\"10.3.1.120\",5555\r\n",strlen("AT+CIPSTART=\"TCP\",\"10.3.1.120\",5555\r\n"));
     // delay1(8000);
     // UART_SendPackage(UART8, "AT+CIPMODE=1\r\n",strlen("AT+CIPMODE=1\r\n"));

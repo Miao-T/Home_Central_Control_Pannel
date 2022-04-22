@@ -132,7 +132,8 @@ ESP8266_Error_Typedef ESP8266_Connect_Wifi_STA();
 void ESP8266_TCP_Init();
 ESP8266_Error_Typedef ESP8266_Connect_TCP();
 ESP8266_Error_Typedef ESP8266_Configure_Passthrough(bool cipmode);
-ESP8266_Error_Typedef ESP8266_TCP_Communication();
+ESP8266_Error_Typedef ESP8266_TCP_Communication_Start();
+void ESP8266_TCP_SendData(char *data);
 ////////////////////////////////////////////////////////////////////////////////
 #endif
 ////////////////////////////////////////////////////////////////////////////////

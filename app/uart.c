@@ -160,7 +160,6 @@ void UART8_IRQHandler(void)
         *(rxBuffer + rCnt) = UART_ReceiveData(UART8);
         rCnt++;
         if (rCnt >= BUFFERSIZE){
-            // rxSuccess = true;
             rCnt = 0;
         }
     }

@@ -81,26 +81,27 @@ char* charExtract(char *subject, int start, int end)
 ////////////////////////////////////////////////////////////////////////////////
 void ESP8266_UART_SendCmd(char *cmd)
 {
-    char *wholeCmd = stringEndJoint(cmd);
+    memset(rxBuffer, 0, sizeof(rxBuffer));
     stringStart = 1;
+    char *wholeCmd = stringEndJoint(cmd);
     UART_SendPackage(ESP8266_UART, (u8*)wholeCmd, strlen(wholeCmd));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-ESP8266_Error_Typedef ESP8266_UART_Send_AT_Command(char *cmd, char *ack, u32 waitTime)
+ESP8266_Error_Typedef ESP8266_UART_Send_AT_Command(char *cmd, char *ack, u32 longestWaitTime)
 {
     ESP8266_UART_SendCmd(cmd);
-    delay(waitTime);
-    printf("Receive: %s \n", rxBuffer);
-    if(strstr(rxBuffer, ack) == NULL){
-        // strstr(), return NULL if no finding
-        printf("Send AT Command:%s   No Right Ack:%s \n", cmd, ack);
-        memset(rxBuffer, 0, sizeof(rxBuffer));
-        return ESP8266_ERROR;
-    }else{
+    u32 timeOut = 0;
+    while(strstr(rxBuffer, ack) == NULL){
+        timeOut++;
+        if(timeOut == longestWaitTime) break;
+    }
+    if(timeOut < longestWaitTime){
         printf("Send AT Command:%s   Get Ack:%s \n", cmd, ack);
-        memset(rxBuffer, 0, sizeof(rxBuffer));
         return ESP8266_OK;
+    }else{
+        printf("Send AT Command:%s   No Right Ack:%s \n", cmd, ack);
+        return ESP8266_ERROR;
     }
 }
 
@@ -108,21 +109,21 @@ ESP8266_Error_Typedef ESP8266_UART_Send_AT_Command(char *cmd, char *ack, u32 wai
 ESP8266_Error_Typedef ESP8266_Init(bool rstEn)
 {
     // exit passthrough transmission mode
-    // char *exitCmd = "+++";
-    // ESP8266_UART_SendCmd(exitCmd);
-    // delay(1000);
+    char *exitCmd = "+++";
+    UART_SendPackage(ESP8266_UART, (u8*)exitCmd, strlen(exitCmd));
+    delay(0xff);
 
     char *cmd = "AT";
     if(rstEn){
         cmd = "AT+RST";
-        if(ESP8266_UART_Send_AT_Command(cmd, "OK", 100)){
+        if(ESP8266_UART_Send_AT_Command(cmd, "OK", 0xffff)){
             printf("Error: ESP8266 RST Fail \n");
             return ESP8266_ERROR;
         }else{
             printf("OK: ESP8266 RST Successfully \n");
         }
     }else{
-        if(ESP8266_UART_Send_AT_Command(cmd, "OK", 3000)){
+        if(ESP8266_UART_Send_AT_Command(cmd, "OK", 0xffff)){
             printf("Error: ESP8266 Init Fail \n");
             return ESP8266_ERROR;
         }else{
@@ -155,7 +156,7 @@ ESP8266_Error_Typedef ESP8266_Connect_Wifi_STA()
 
     // Send WIFI Mode Command
     char *cmd = "AT+CWMODE=1";
-    if(ESP8266_UART_Send_AT_Command(cmd, "OK", 8000)){
+    if(ESP8266_UART_Send_AT_Command(cmd, "OK", 0xffff)){
         printf("Error: Fail to configure WIFI mode STA \n");
         // return ESP8266_ERROR;
     }else{
@@ -166,7 +167,7 @@ ESP8266_Error_Typedef ESP8266_Connect_Wifi_STA()
     char *wifiPara = stringJoint(stringQutJoint(ESP8266_WIFI_SSID), stringCommaJoint(stringQutJoint(ESP8266_WIFI_PWD)));
     cmd = stringJoint("AT+CWJAP=", wifiPara);
     ESP8266_WIFI_InitStruct.status = WIFI_CONNECTING;
-    if(ESP8266_UART_Send_AT_Command(cmd, "OK", 8000)){
+    if(ESP8266_UART_Send_AT_Command(cmd, "OK", 0xffffffff)){
         ESP8266_WIFI_InitStruct.status = WIFI_FAIL;
         printf("Error: Fail to Connect WIFI %s \n", ESP8266_WIFI_SSID);
         return ESP8266_ERROR;
@@ -218,7 +219,7 @@ ESP8266_Error_Typedef ESP8266_Connect_TCP()
     char *cmd = stringJoint("AT+CIPSTART=\"TCP\",", stringJoint(stringQutJoint(ipAddr), stringCommaJoint(ipPort)));
 
     ESP8266_TCP_InitStruct.tcpStatus = TCP_CONNECTING;
-    if(ESP8266_UART_Send_AT_Command(cmd, "OK", 8000)){
+    if(ESP8266_UART_Send_AT_Command(cmd, "OK", 0xffffff)){
         ESP8266_TCP_InitStruct.tcpStatus = TCP_FAIL;
         printf("Error: Fail to Connect TCP %s \n", ipAddr);
         return ESP8266_ERROR;
@@ -226,10 +227,6 @@ ESP8266_Error_Typedef ESP8266_Connect_TCP()
         ESP8266_TCP_InitStruct.tcpStatus = TCP_GOT_TCP;
         printf("OK: Connect TCP %s successfully \n", ipAddr);
     }
-
-    // Confiugre passthrough mode
-    if(ESP8266_Configure_Passthrough(true))
-        return ESP8266_ERROR;
 
     return ESP8266_OK;
 }
@@ -244,7 +241,7 @@ ESP8266_Error_Typedef ESP8266_Configure_Passthrough(bool cipmode)
         cmd = stringJoint(cmd,"0");
     }
 
-    if(ESP8266_UART_Send_AT_Command(cmd, "OK", 8000)){
+    if(ESP8266_UART_Send_AT_Command(cmd, "OK", 0xffff)){
         printf("Error: Fail to Set CIPMODE %d \n", cipmode);
         return ESP8266_ERROR;
     }else{
@@ -256,17 +253,26 @@ ESP8266_Error_Typedef ESP8266_Configure_Passthrough(bool cipmode)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-ESP8266_Error_Typedef ESP8266_TCP_Communication()
+ESP8266_Error_Typedef ESP8266_TCP_Communication_Start()
 {
-    ESP8266_Configure_Passthrough(true);
+    if(ESP8266_Configure_Passthrough(true))
+        return ESP8266_ERROR;
 
-    char *cmd = "AT+SEND";
-    if(ESP8266_UART_Send_AT_Command(cmd, ">", 8000)){
-        // printf("Error: Fail to Set CIPMODE %d \n", cipmode);
+    char *cmd = "AT+CIPSEND";
+    if(ESP8266_UART_Send_AT_Command(cmd, ">", 0xffff)){
+        printf("Error: Fail to Start Sending \n");
         return ESP8266_ERROR;
     }else{
-        // printf("OK: Configure CIPMODE %d successfully \n", cipmode);
+        printf("OK: Please start to send data \n");
     }
 
     return ESP8266_OK;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void ESP8266_TCP_SendData(char *data)
+{
+    memset(rxBuffer, 0, sizeof(rxBuffer));
+    stringStart = 1;
+    UART_SendPackage(ESP8266_UART, (u8*)data, strlen(data));
 }
