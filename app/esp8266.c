@@ -96,6 +96,11 @@ ESP8266_Error_Typedef ESP8266_Send_AT_Command(char *cmd, char *ack, u32 longestW
         timeOut++;
         if(timeOut == longestWaitTime) break;
     }
+
+    // // Clear rxBuffer
+    // memset(rxBuffer, 0, sizeof(rxBuffer));
+    // stringStart = 1;
+
     if(timeOut < longestWaitTime){
         printf("Send AT Command:%s   Get Ack:%s \n", cmd, ack);
         return ESP8266_OK;
@@ -218,7 +223,6 @@ ESP8266_Error_Typedef ESP8266_Search_Device_IP()
 ////////////////////////////////////////////////////////////////////////////////
 void ESP8266_TCP_Init()
 {
-    ESP8266_TCP_InitStruct.wifiPara = ESP8266_WIFI_InitStruct;
     ESP8266_TCP_InitStruct.ipAddr.ipAddr0 = ESP8266_TCP_IPADDR_0;
     ESP8266_TCP_InitStruct.ipAddr.ipAddr1 = ESP8266_TCP_IPADDR_1;
     ESP8266_TCP_InitStruct.ipAddr.ipAddr2 = ESP8266_TCP_IPADDR_2;
@@ -298,4 +302,115 @@ void ESP8266_TCP_SendData(char *data)
     memset(rxBuffer, 0, sizeof(rxBuffer));
     stringStart = 1;
     UART_SendPackage(ESP8266_UART, (u8*)data, strlen(data));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void ESP8266_MQTT_Init()
+{
+    ESP8266_MQTT_InitStruct.ipAddr.mqttIPAddr0 = ESP8266_MQTT_HOST_IPADDR_0;
+    ESP8266_MQTT_InitStruct.ipAddr.mqttIPAddr1 = ESP8266_MQTT_HOST_IPADDR_1;
+    ESP8266_MQTT_InitStruct.ipAddr.mqttIPAddr2 = ESP8266_MQTT_HOST_IPADDR_2;
+    ESP8266_MQTT_InitStruct.ipAddr.mqttIPAddr3 = ESP8266_MQTT_HOST_IPADDR_3;
+    ESP8266_MQTT_InitStruct.port = (uint32_t)ESP8266_MQTT_PORT;
+    ESP8266_MQTT_InitStruct.clientID = ESP8266_MQTT_CLIENTIP;
+    ESP8266_MQTT_InitStruct.username = ESP8266_MQTT_USERNAME;
+    ESP8266_MQTT_InitStruct.password = ESP8266_MQTT_PSD;
+    ESP8266_MQTT_InitStruct.mqttStatus = NO_INIT;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+ESP8266_Error_Typedef ESP8266_Connect_MQTT()
+{
+    ESP8266_MQTT_Init();
+
+    char *cmd = (char*)malloc(256);
+    sprintf(cmd, "AT+MQTTUSERCFG=0,1,\"%s\",\"%s\",\"%s\",0,0,\"\"", ESP8266_MQTT_CLIENTIP, ESP8266_MQTT_USERNAME, ESP8266_MQTT_PSD);
+
+    if(ESP8266_Send_AT_Command_Times(cmd, "OK", 0xffff, 2)){
+        printf("Error: Fail to Configure MQTT \n");
+        return ESP8266_ERROR;
+    }else{
+        ESP8266_MQTT_InitStruct.mqttStatus = USERCFG_SET;
+        printf("OK: Configure MQTT successfully \n");
+    }
+
+    sprintf(cmd, "AT+MQTTCONN=0,\"%d.%d.%d.%d\",%d,0", ESP8266_MQTT_HOST_IPADDR_0, ESP8266_MQTT_HOST_IPADDR_1, ESP8266_MQTT_HOST_IPADDR_2, ESP8266_MQTT_HOST_IPADDR_3, ESP8266_MQTT_PORT);
+    if(ESP8266_Send_AT_Command_Times(cmd, "OK", 0xffff, 2)){
+        ESP8266_MQTT_InitStruct.mqttStatus = DISCONNECTED;
+        printf("Error: Fail to Connect MQTT \n");
+        return ESP8266_ERROR;
+    }else{
+        ESP8266_MQTT_InitStruct.mqttStatus = CONNECTED;
+        printf("OK: Connect MQTT successfully \n");
+    }
+
+    return ESP8266_OK;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+ESP8266_Error_Typedef ESP8266_MQTT_SUB(char* subTopic)
+{
+    char *cmd = (char*)malloc(strlen("AT+MQTTSUB=0,\"%s\",1") + strlen(subTopic));
+    sprintf(cmd, "AT+MQTTSUB=0,\"%s\",1", subTopic);
+
+    if(ESP8266_Send_AT_Command_Times(cmd, "OK", 0xffff, 2)){
+        ESP8266_MQTT_InitStruct.mqttStatus = CONNECTED_NO_SUB;
+        printf("Error: Fail to Subscribe topic \n");
+        return ESP8266_ERROR;
+    }else{
+        ESP8266_MQTT_InitStruct.mqttStatus = CONNECTED_AND_SUB;
+        printf("OK: Subscribe topic successfully \n");
+    }
+
+    return ESP8266_OK;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+ESP8266_Error_Typedef ESP8266_MQTT_UNSUB(char* subTopic)
+{
+    char *cmd = (char*)malloc(strlen("AT+MQTTUNSUB=0,\"\"") + strlen(subTopic));
+    sprintf(cmd, "AT+MQTTUNSUB=0,\"%s\"", subTopic);
+
+    if(ESP8266_Send_AT_Command_Times(cmd, "OK", 0xffff, 2)){
+        ESP8266_MQTT_InitStruct.mqttStatus = CONNECTED_NO_SUB;
+        printf("Error: Fail to Subscribe topic \n");
+        return ESP8266_ERROR;
+    }else{
+        ESP8266_MQTT_InitStruct.mqttStatus = CONNECTED_AND_SUB;
+        printf("OK: Subscribe topic successfully \n");
+    }
+
+    return ESP8266_OK;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+ESP8266_Error_Typedef ESP8266_MQTT_PUB(char* pubTopic, char* data)
+{
+    char *cmd = (char*)malloc(strlen("AT+MQTTPUB=0,\"\",\"\",1,0") + strlen(pubTopic) + strlen(data));
+    sprintf(cmd, "AT+MQTTPUB=0,\"%s\",\"%s\",1,0", pubTopic, data);
+
+    if(ESP8266_Send_AT_Command_Times(cmd, "OK", 0xffff, 2)){
+        printf("Error: Fail to Publish topic \n");
+        return ESP8266_ERROR;
+    }else{
+        printf("OK: Publish topic successfully \n");
+    }
+
+    return ESP8266_OK;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+ESP8266_Error_Typedef ESP8266_MQTT_CLEAN()
+{
+    char *cmd = "AT+MQTTCLEAN=0";
+
+    if(ESP8266_Send_AT_Command_Times(cmd, "OK", 0xffff, 2)){
+        printf("Error: Fail to Disconnect MQTT \n");
+        return ESP8266_ERROR;
+    }else{
+        ESP8266_MQTT_InitStruct.mqttStatus = NO_INIT;
+        printf("OK: Disconnect MQTT successfully \n");
+    }
+
+    return ESP8266_OK;
 }

@@ -118,30 +118,14 @@ int main(void)
     /*                   ESP8266                 */
     ESP8266_Init();
     ESP8266_Connect_Wifi_STA();
-    ESP8266_Connect_TCP();
-    ESP8266_TCP_Communication_Start();
-    ESP8266_TCP_SendData("Congratulation!");
+    ESP8266_MQTT_CLEAN();
+    ESP8266_Connect_MQTT();
+    ESP8266_MQTT_SUB("esp8266");
+    ESP8266_MQTT_PUB("esp8266","hello world");
+    // ESP8266_Connect_TCP();
+    // ESP8266_TCP_Communication_Start();
+    // ESP8266_TCP_SendData("Congratulation!");
 
-    // UART_SendPackage(UART8, "AT\r\n",strlen("AT\r\n"));
-    // delay(5000);
-    // // while(strstr(rxBuffer, "OK") == NULL);
-    // // memset(rxBuffer, 0, sizeof(rxBuffer));
-    // UART_SendPackage(UART8, "AT+CWMODE=1\r\n",strlen("AT+CWMODE=1\r\n"));
-    // delay(5000);
-    // // while(strstr(rxBuffer, "OK") == NULL);
-    // memset(rxBuffer, 0, sizeof(rxBuffer));
-    // stringStart = 1;
-    // UART_SendPackage(UART8, "AT+CWJAP=\"MMNJ\",\"MMNJ2017\"\r\n",strlen("AT+CWJAP=\"MMNJ\",\"MMNJ2017\"\r\n"));
-    // while(strstr(rxBuffer, "OK") == NULL);
-    // delay(5000);
-    // // memset(rxBuffer, 0, sizeof(rxBuffer));
-    // UART_SendPackage(UART8, "AT+CIPSTART=\"TCP\",\"10.3.1.120\",5555\r\n",strlen("AT+CIPSTART=\"TCP\",\"10.3.1.120\",5555\r\n"));
-    // delay(8000);
-    // UART_SendPackage(UART8, "AT+CIPMODE=1\r\n",strlen("AT+CIPMODE=1\r\n"));
-    // delay(2000);
-    // UART_SendPackage(UART8, "AT+CIPSEND\r\n",strlen("AT+CIPSEND\r\n"));
-    // delay(2000);
-    // UART_SendPackage(UART8, "123",strlen("123"));
     /*                   I2C                 */
     // Scan_All_Addr(I2C2, I2CSlaveAddr, cnt));
 
