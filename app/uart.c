@@ -50,7 +50,10 @@ PUTCHAR_PROTOTYPE
     return ch;
 }
 
-u16 gSendLen;
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  UART GPIO Configuration.
+/// @param  UARTx: Select the UART or the UART peripheral.
+/// @retval None.
 ////////////////////////////////////////////////////////////////////////////////
 void initGPIO_UART(UART_TypeDef *UARTx)
 {
@@ -92,6 +95,12 @@ void initGPIO_UART(UART_TypeDef *UARTx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Initializes the UARTx peripheral according to the specified
+///         parameters in the UART_InitStruct.
+/// @param  UARTx: Select the UART or the UART peripheral.
+/// @param  baudrate: UART communication baudrate.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
 void initUART(UART_TypeDef *UARTx, uint32_t baudrate)
 {
     UART_InitTypeDef UART_InitStructure;
@@ -126,6 +135,10 @@ void initUART(UART_TypeDef *UARTx, uint32_t baudrate)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Configure UART NVIC.
+/// @param  UARTx: Select the UART or the UART peripheral.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
 void NVIC_UART(UART_TypeDef *UARTx)
 {
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -148,6 +161,10 @@ void NVIC_UART(UART_TypeDef *UARTx)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  UART8 Receive data by interrupt.
+/// @param  None.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
 void UART8_IRQHandler(void)
 {
     if(UART_GetITStatus(UART8, UART_ISR_RX) != RESET) {
@@ -166,6 +183,12 @@ void UART8_IRQHandler(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  UART send package data.
+/// @param  UARTx: Select the UART or the UART peripheral.
+/// @param  ptr: Data sent by UART.
+/// @param  len: Length of data.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
 void UART_SendPackage(UART_TypeDef *UARTx, u8* ptr, u16 len)
 {
     while(len--){
@@ -175,6 +198,21 @@ void UART_SendPackage(UART_TypeDef *UARTx, u8* ptr, u16 len)
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Clear Rx Buffer.
+/// @param  None.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
+void UART_ClearRxBuffer()
+{
+    memset(rxBuffer, 0, sizeof(rxBuffer));
+    stringStart = 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Initialize UART on board MB-039.
+/// @param  None.
+/// @retval None.
 ////////////////////////////////////////////////////////////////////////////////
 void BSP_UART_Configure()
 {

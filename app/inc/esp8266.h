@@ -4,47 +4,60 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef enum {
-    ESP8266_OK       = (uint8_t)0,
-    ESP8266_ERROR    = !ESP8266_OK
+    ESP8266_OK                          = (uint8_t)0,
+    ESP8266_ERROR                       = !ESP8266_OK
 } ESP8266_Error_Typedef;
 
 typedef enum {
-    NO_WIFI         = (uint8_t)0,
-    STA             = (uint8_t)1,
-    AP              = (uint8_t)2,
-    MIX             = (uint8_t)3
+    NO_WIFI                             = (uint8_t)0,
+    STA                                 = (uint8_t)1,
+    AP                                  = (uint8_t)2,
+    MIX                                 = (uint8_t)3
 } ESP8266_Mode_Typedef;
 
 typedef enum {
-    QUICK_SCAN      = (uint8_t)0,
-    ALL_SCAN        = (uint8_t)1
+    QUICK_SCAN                          = (uint8_t)0,
+    ALL_SCAN                            = (uint8_t)1
 } ESP8266_STA_Scan_Mode_Typedef;
 
 typedef enum {
-    WIFI_IDLE            = (uint8_t)0,
-    WIFI_CONNECTING      = (uint8_t)1,
-    WIFI_WRONG_PSD       = (uint8_t)2,
-    WIFI_NO_SSID         = (uint8_t)3,
-    WIFI_FAIL            = (uint8_t)4,
-    WIFI_GOT_IP          = (uint8_t)5
+    WIFI_IDLE                           = (uint8_t)0,
+    WIFI_CONNECTING                     = (uint8_t)1,
+    WIFI_WRONG_PSD                      = (uint8_t)2,
+    WIFI_NO_SSID                        = (uint8_t)3,
+    WIFI_FAIL                           = (uint8_t)4,
+    WIFI_GOT_IP                         = (uint8_t)5
 } ESP8266_Wifi_Status_Typedef;
 
 typedef enum {
-    TCP_IDLE            = (uint8_t)0,
-    TCP_CONNECTING      = (uint8_t)1,
-    TCP_FAIL            = (uint8_t)4,
-    TCP_GOT_TCP         = (uint8_t)5
+    TCP_IDLE                            = (uint8_t)0,
+    TCP_CONNECTING                      = (uint8_t)1,
+    TCP_FAIL                            = (uint8_t)4,
+    TCP_GOT_TCP                         = (uint8_t)5
 } ESP8266_TCP_Status_Typedef;
 
 typedef enum{
-    NO_INIT             = (uint8_t)0,
-    USERCFG_SET         = (uint8_t)1,
-    CONNCFG_SET         = (uint8_t)2,
-    DISCONNECTED        = (uint8_t)3,
-    CONNECTED           = (uint8_t)4,
-    CONNECTED_NO_SUB    = (uint8_t)5,
-    CONNECTED_AND_SUB   = (uint8_t)6
+    NO_INIT                             = (uint8_t)0,
+    USERCFG_SET                         = (uint8_t)1,
+    CONNCFG_SET                         = (uint8_t)2,
+    DISCONNECTED                        = (uint8_t)3,
+    CONNECTED                           = (uint8_t)4,
+    CONNECTED_NO_SUB                    = (uint8_t)5,
+    CONNECTED_AND_SUB                   = (uint8_t)6
 } ESP8266_MQTT_Status_Typedef;
+
+typedef enum{
+    NO_TLS                              = (uint8_t)1,
+    TLS_NO_CA                           = (uint8_t)2,
+    TLS_SERVICE_CA                      = (uint8_t)3,
+    TLS_CLIENT_CA                       = (uint8_t)4,
+    TLS_SERVICE_CLIENT_CA               = (uint8_t)5,
+    WS_TCP                              = (uint8_t)6,
+    WSS_NO_CA                           = (uint8_t)7,
+    WSS_SERVICE_CA                      = (uint8_t)8,
+    WSS_CLIENT_CA                       = (uint8_t)9,
+    WSS_SERVICE_CLIENT_CA               = (uint8_t)10
+} ESP8266_MQTT_Scheme_Typedef;
 
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef _ESP8266_C_
@@ -150,6 +163,7 @@ typedef struct
     char*                               clientID;
     char*                               username;
     char*                               password;
+    ESP8266_MQTT_Scheme_Typedef         scheme;
     ESP8266_MQTT_Status_Typedef         mqttStatus;
 } ESP8266_MQTT_Typedef;
 ESP8266_MQTT_Typedef ESP8266_MQTT_InitStruct;
@@ -176,8 +190,8 @@ ESP8266_Error_Typedef ESP8266_Connect_TCP();
 ESP8266_Error_Typedef ESP8266_Configure_Passthrough(bool cipmode);
 ESP8266_Error_Typedef ESP8266_TCP_Communication_Start();
 void ESP8266_TCP_SendData(char *data);
-void ESP8266_MQTT_Init();
-ESP8266_Error_Typedef ESP8266_Connect_MQTT();
+void ESP8266_MQTT_Init(char* clientId, char* username, char* psd, ESP8266_MQTT_Scheme_Typedef scheme);
+ESP8266_Error_Typedef ESP8266_Connect_MQTT(char* clientId, char* username, char* psd, ESP8266_MQTT_Scheme_Typedef scheme);
 ESP8266_Error_Typedef ESP8266_MQTT_SUB(char* subTopic);
 ESP8266_Error_Typedef ESP8266_MQTT_UNSUB(char* subTopic);
 ESP8266_Error_Typedef ESP8266_MQTT_PUB(char* pubTopic, char* data);

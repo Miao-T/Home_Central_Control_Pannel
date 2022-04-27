@@ -14,6 +14,11 @@
 #include "uart.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Joint string cmd1 and cmd2.
+/// @param  cmd1: First string.
+/// @param  cmd2: Second string.
+/// @retval The result string.
+////////////////////////////////////////////////////////////////////////////////
 char* stringJoint(char *cmd1, char *cmd2)
 {
     char *wholeCmd = (char *)malloc(strlen(cmd1) + strlen(cmd2) + 1);
@@ -21,6 +26,10 @@ char* stringJoint(char *cmd1, char *cmd2)
     return wholeCmd;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Joint string cmd and comma.
+/// @param  cmd: First string.
+/// @retval The result string.
 ////////////////////////////////////////////////////////////////////////////////
 char* stringCommaJoint(char *cmd)
 {
@@ -30,6 +39,10 @@ char* stringCommaJoint(char *cmd)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Joint string cmd and quotation.
+/// @param  cmd: First string.
+/// @retval The result string.
+////////////////////////////////////////////////////////////////////////////////
 char* stringQutJoint(char *cmd)
 {
     char *sign = "\"";
@@ -37,6 +50,10 @@ char* stringQutJoint(char *cmd)
     return wholeCmd;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Joint string cmd and \r\n.
+/// @param  cmd: First string.
+/// @retval The result string.
 ////////////////////////////////////////////////////////////////////////////////
 char* stringEndJoint(char *cmd)
 {
@@ -79,14 +96,23 @@ char* charExtract(char *subject, int start, int end)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Send commands to ESP8266 by UART.
+/// @param  cmd: Commands sent to ESP8266.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
 void ESP8266_UART_SendCmd(char *cmd)
 {
-    memset(rxBuffer, 0, sizeof(rxBuffer));
-    stringStart = 1;
+    UART_ClearRxBuffer();
     char *wholeCmd = stringEndJoint(cmd);
     UART_SendPackage(ESP8266_UART, (u8*)wholeCmd, strlen(wholeCmd));
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Send AT commands to ESP8266 and check ack.
+/// @param  cmd: Commands sent to ESP8266.
+/// @param  ack: Ack from ESP8266 after receiving AT commands.
+/// @param  longestWaitTime: Longest time waitting for right ack.
+/// @retval ESP8266 OK or ERROR.
 ////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_Send_AT_Command(char *cmd, char *ack, u32 longestWaitTime)
 {
@@ -97,10 +123,6 @@ ESP8266_Error_Typedef ESP8266_Send_AT_Command(char *cmd, char *ack, u32 longestW
         if(timeOut == longestWaitTime) break;
     }
 
-    // // Clear rxBuffer
-    // memset(rxBuffer, 0, sizeof(rxBuffer));
-    // stringStart = 1;
-
     if(timeOut < longestWaitTime){
         printf("Send AT Command:%s   Get Ack:%s \n", cmd, ack);
         return ESP8266_OK;
@@ -110,6 +132,13 @@ ESP8266_Error_Typedef ESP8266_Send_AT_Command(char *cmd, char *ack, u32 longestW
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Sending AT commands to ESP8266 for maxTimes.
+/// @param  cmd: Commands sent to ESP8266.
+/// @param  ack: Ack from ESP8266 after receiving AT commands.
+/// @param  longestWaitTime: Longest time waitting for right ack.
+/// @param  maxTimes: Send commands for times. Return ERROR if no right ack.
+/// @retval ESP8266 OK or ERROR.
 ////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_Send_AT_Command_Times(char *cmd, char *ack, u32 longestWaitTime, u8 maxTimes)
 {
@@ -125,6 +154,10 @@ ESP8266_Error_Typedef ESP8266_Send_AT_Command_Times(char *cmd, char *ack, u32 lo
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Sending +++ without '\r\n' to exit passthrough mode.
+/// @param  None.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
 void ESP8266_Init_Exit_Passthrough()
 {
     // exit passthrough transmission mode
@@ -135,6 +168,10 @@ void ESP8266_Init_Exit_Passthrough()
     for(timeOut = 0; timeOut < 0xffffff; timeOut++);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Exit passthrough mode first and send 'AT' to check ESP8266.
+/// @param  None.
+/// @retval ESP8266 OK or ERROR.
 ////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_Init()
 {
@@ -152,6 +189,10 @@ ESP8266_Error_Typedef ESP8266_Init()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Exit passthrough mode first and reset ESP8266.
+/// @param  None.
+/// @retval ESP8266 OK or ERROR.
+////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_Reset()
 {
     ESP8266_Init_Exit_Passthrough();
@@ -168,9 +209,13 @@ ESP8266_Error_Typedef ESP8266_Reset()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void ESP8266_WIFI_Init(ESP8266_Mode_Typedef wifiMode)
+/// @brief  Configure ESP8266 WIFI parameters.
+/// @param  mode: STA / AP / MIX.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
+void ESP8266_WIFI_Init(ESP8266_Mode_Typedef mode)
 {
-    ESP8266_WIFI_InitStruct.mode = wifiMode;
+    ESP8266_WIFI_InitStruct.mode = mode;
     ESP8266_WIFI_InitStruct.status = WIFI_IDLE;
     ESP8266_WIFI_InitStruct.staPara.ssid = ESP8266_WIFI_SSID;
     ESP8266_WIFI_InitStruct.staPara.pwd = ESP8266_WIFI_PWD;
@@ -179,6 +224,10 @@ void ESP8266_WIFI_Init(ESP8266_Mode_Typedef wifiMode)
     ESP8266_WIFI_InitStruct.staPara.scanMode = QUICK_SCAN;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Configure STA mode and connect wifi.
+/// @param  None.
+/// @retval ESP8266 OK or ERROR.
 ////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_Connect_Wifi_STA()
 {
@@ -221,6 +270,10 @@ ESP8266_Error_Typedef ESP8266_Search_Device_IP()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Configure ESP8266 WIFI parameters.
+/// @param  None.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
 void ESP8266_TCP_Init()
 {
     ESP8266_TCP_InitStruct.ipAddr.ipAddr0 = ESP8266_TCP_IPADDR_0;
@@ -232,6 +285,10 @@ void ESP8266_TCP_Init()
     ESP8266_TCP_InitStruct.passthrough = 0;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Connect TCP.
+/// @param  None.
+/// @retval ESP8266 OK or ERROR.
 ////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_Connect_TCP()
 {
@@ -259,6 +316,10 @@ ESP8266_Error_Typedef ESP8266_Connect_TCP()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Configure passthrough mode.
+/// @param  cipmode: 1-passthrough; 0-normal.
+/// @retval ESP8266 OK or ERROR.
+////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_Configure_Passthrough(bool cipmode)
 {
     char *cmd = "AT+CIPMODE=";
@@ -280,6 +341,10 @@ ESP8266_Error_Typedef ESP8266_Configure_Passthrough(bool cipmode)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Communication with TCP server.
+/// @param  None.
+/// @retval ESP8266 OK or ERROR.
+////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_TCP_Communication_Start()
 {
     if(ESP8266_Configure_Passthrough(true))
@@ -297,6 +362,10 @@ ESP8266_Error_Typedef ESP8266_TCP_Communication_Start()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Send data to TCP server.
+/// @param  data: data sent to TCP server.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
 void ESP8266_TCP_SendData(char *data)
 {
     memset(rxBuffer, 0, sizeof(rxBuffer));
@@ -305,26 +374,41 @@ void ESP8266_TCP_SendData(char *data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void ESP8266_MQTT_Init()
+/// @brief  Configure ESP8266 MQTT parameters.
+/// @param  clientId: Client ID num.
+/// @param  username: MQTT server username to log in MQTT broker.
+/// @param  psd: MQTT server password to log in MQTT broker.
+/// @param  scheme: Verification methods.
+/// @retval None.
+////////////////////////////////////////////////////////////////////////////////
+void ESP8266_MQTT_Init(char* clientId, char* username, char* psd, ESP8266_MQTT_Scheme_Typedef scheme)
 {
     ESP8266_MQTT_InitStruct.ipAddr.mqttIPAddr0 = ESP8266_MQTT_HOST_IPADDR_0;
     ESP8266_MQTT_InitStruct.ipAddr.mqttIPAddr1 = ESP8266_MQTT_HOST_IPADDR_1;
     ESP8266_MQTT_InitStruct.ipAddr.mqttIPAddr2 = ESP8266_MQTT_HOST_IPADDR_2;
     ESP8266_MQTT_InitStruct.ipAddr.mqttIPAddr3 = ESP8266_MQTT_HOST_IPADDR_3;
     ESP8266_MQTT_InitStruct.port = (uint32_t)ESP8266_MQTT_PORT;
-    ESP8266_MQTT_InitStruct.clientID = ESP8266_MQTT_CLIENTIP;
-    ESP8266_MQTT_InitStruct.username = ESP8266_MQTT_USERNAME;
-    ESP8266_MQTT_InitStruct.password = ESP8266_MQTT_PSD;
+    ESP8266_MQTT_InitStruct.clientID = clientId;
+    ESP8266_MQTT_InitStruct.username = username;
+    ESP8266_MQTT_InitStruct.password = psd;
+    ESP8266_MQTT_InitStruct.scheme = scheme;
     ESP8266_MQTT_InitStruct.mqttStatus = NO_INIT;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-ESP8266_Error_Typedef ESP8266_Connect_MQTT()
+/// @brief  Connect with MQTT server.
+/// @param  clientId: Client ID num.
+/// @param  username: MQTT server username to log in MQTT broker.
+/// @param  psd: MQTT server password to log in MQTT broker.
+/// @param  scheme: Verification methods.
+/// @retval ESP8266 OK or ERROR.
+////////////////////////////////////////////////////////////////////////////////
+ESP8266_Error_Typedef ESP8266_Connect_MQTT(char* clientId, char* username, char* psd, ESP8266_MQTT_Scheme_Typedef scheme)
 {
-    ESP8266_MQTT_Init();
+    ESP8266_MQTT_Init(clientId, username, psd, scheme);
 
     char *cmd = (char*)malloc(256);
-    sprintf(cmd, "AT+MQTTUSERCFG=0,1,\"%s\",\"%s\",\"%s\",0,0,\"\"", ESP8266_MQTT_CLIENTIP, ESP8266_MQTT_USERNAME, ESP8266_MQTT_PSD);
+    sprintf(cmd, "AT+MQTTUSERCFG=0,1,\"%s\",\"%s\",\"%s\",0,0,\"\"", clientId, username, psd);
 
     if(ESP8266_Send_AT_Command_Times(cmd, "OK", 0xffff, 2)){
         printf("Error: Fail to Configure MQTT \n");
@@ -348,6 +432,26 @@ ESP8266_Error_Typedef ESP8266_Connect_MQTT()
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Check MQTT client state.
+/// @param  None.
+/// @retval ESP8266 OK or ERROR.
+////////////////////////////////////////////////////////////////////////////////
+ESP8266_Error_Typedef ESP8266_Check_MQTT(){
+    char *cmd = "AT+MQTTCONN?";
+
+    if(ESP8266_Send_AT_Command_Times(cmd, "OK", 0xffff, 2)){
+        // printf("Error: Fail to Connect MQTT \n");
+        return ESP8266_ERROR;
+    }else{
+        // printf("OK: Connect MQTT successfully \n");
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Subscribe topic from MQTT server.
+/// @param  subTopic: Subscribed topic name.
+/// @retval ESP8266 OK or ERROR.
+////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_MQTT_SUB(char* subTopic)
 {
     char *cmd = (char*)malloc(strlen("AT+MQTTSUB=0,\"%s\",1") + strlen(subTopic));
@@ -365,6 +469,10 @@ ESP8266_Error_Typedef ESP8266_MQTT_SUB(char* subTopic)
     return ESP8266_OK;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// @brief  Unsubscribe topic from MQTT server.
+/// @param  subTopic: Unsubscribed topic name.
+/// @retval ESP8266 OK or ERROR.
 ////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_MQTT_UNSUB(char* subTopic)
 {
@@ -384,6 +492,10 @@ ESP8266_Error_Typedef ESP8266_MQTT_UNSUB(char* subTopic)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Publish topic to MQTT server.
+/// @param  subTopic: Publish topic name.
+/// @retval ESP8266 OK or ERROR.
+////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_MQTT_PUB(char* pubTopic, char* data)
 {
     char *cmd = (char*)malloc(strlen("AT+MQTTPUB=0,\"\",\"\",1,0") + strlen(pubTopic) + strlen(data));
@@ -400,11 +512,15 @@ ESP8266_Error_Typedef ESP8266_MQTT_PUB(char* pubTopic, char* data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// @brief  Disconnect with MQTT server.
+/// @param  None.
+/// @retval ESP8266 OK or ERROR.
+////////////////////////////////////////////////////////////////////////////////
 ESP8266_Error_Typedef ESP8266_MQTT_CLEAN()
 {
     char *cmd = "AT+MQTTCLEAN=0";
 
-    if(ESP8266_Send_AT_Command_Times(cmd, "OK", 0xffff, 2)){
+    if(ESP8266_Send_AT_Command_Times(cmd, "OK\r\n", 0xffff, 2)){
         printf("Error: Fail to Disconnect MQTT \n");
         return ESP8266_ERROR;
     }else{

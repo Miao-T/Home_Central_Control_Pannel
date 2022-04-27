@@ -22,6 +22,7 @@ void initGPIO_UART(UART_TypeDef *UARTx);
 void initUART(UART_TypeDef *UARTx, uint32_t baudrate);
 void NVIC_UART(UART_TypeDef *UARTx);
 void UART_SendPackage(UART_TypeDef *UARTx, u8* ptr, u16 len);
+void UART_ClearRxBuffer();
 void BSP_UART_Configure();
 
 ////////////////////////////////////////////////////////////////////////////////
